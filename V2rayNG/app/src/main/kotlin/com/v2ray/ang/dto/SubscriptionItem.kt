@@ -8,6 +8,7 @@ data class SubscriptionItem(
     var url: String = "",
     var enabled: Boolean = true,
     val addedTime: Long = System.currentTimeMillis(),
-    val autoUpdate: Boolean = false,
+    var lastUpdated: Long = -1,
+    var autoUpdate: Boolean = false,
     val updateInterval: Int? = null,
 )

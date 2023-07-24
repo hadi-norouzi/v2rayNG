@@ -1,5 +1,6 @@
 package com.v2ray.ang
 
+import android.content.Context
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import com.tencent.mmkv.MMKV
@@ -7,6 +8,12 @@ import com.tencent.mmkv.MMKV
 class AngApplication : MultiDexApplication() {
     companion object {
         const val PREF_LAST_VERSION = "pref_last_version"
+        lateinit var application: AngApplication
+    }
+
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        application = this
     }
 
     var firstRun = false

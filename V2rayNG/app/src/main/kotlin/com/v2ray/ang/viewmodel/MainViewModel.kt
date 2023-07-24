@@ -129,14 +129,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateListAction.value = -1 // update all
 
         getApplication<AngApplication>().toast(R.string.connection_test_testing)
-        viewModelScope.launch(Dispatchers.Default) { // without Dispatchers.Default viewModelScope will launch in main thread
-            for (item in serversCache) {
-                val config = V2rayConfigUtil.getV2rayConfig(getApplication(), item.guid)
-                if (config.status) {
-                    MessageUtil.sendMsg2TestService(getApplication(), AppConfig.MSG_MEASURE_CONFIG, Pair(item.guid, config.content))
-                }
+        // without Dispatchers.Default viewModelScope will launch in main thread
+        for (item in serversCache) {
+            val config = V2rayConfigUtil.getV2rayConfig(getApplication(), item.guid)
+            if (config.status) {
+                MessageUtil.sendMsg2TestService(getApplication(), AppConfig.MSG_MEASURE_CONFIG, Pair(item.guid, config.content))
             }
         }
+
     }
 
     fun testCurrentServerRealPing() {
