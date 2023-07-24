@@ -117,6 +117,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                         toast(R.string.toast_permission_denied)
                 }
         }
+        listenToSubUpdate()
     }
 
     private fun setupViewModel() {
@@ -488,48 +489,62 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         return true
     }
 
+
+    fun listenToSubUpdate() {
+        mainViewModel.subsList.observe(this) {
+            println("updated $it")
+            it.forEach { sub ->
+                importBatchConfig(sub.second, sub.first)
+                toast("${sub.first} Updated")
+            }
+        }
+    }
+
     /**
      * import config from sub
      */
     fun importConfigViaSub()
             : Boolean {
-        try {
-            toast(R.string.title_sub_update)
-            MmkvManager.decodeSubscriptions().forEach {
-                if (TextUtils.isEmpty(it.first)
-                        || TextUtils.isEmpty(it.second.remarks)
-                        || TextUtils.isEmpty(it.second.url)
-                ) {
-                    return@forEach
-                }
-                if (!it.second.enabled) {
-                    return@forEach
-                }
-                val url = Utils.idnToASCII(it.second.url)
-                if (!Utils.isValidUrl(url)) {
-                    return@forEach
-                }
-                Log.d(ANG_PACKAGE, url)
-                lifecycleScope.launch(Dispatchers.IO) {
-                    val configText = try {
-                        Utils.getUrlContentWithCustomUserAgent(url)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        launch(Dispatchers.Main) {
-                            toast("\"" + it.second.remarks + "\" " + getString(R.string.toast_failure))
-                        }
-                        return@launch
-                    }
-                    launch(Dispatchers.Main) {
-                        importBatchConfig(configText, it.first)
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return false
-        }
+
+        mainViewModel.updateSubs()
         return true
+//        try {
+//            toast(R.string.title_sub_update)
+//            MmkvManager.decodeSubscriptions().forEach {
+//                if (TextUtils.isEmpty(it.first)
+//                        || TextUtils.isEmpty(it.second.remarks)
+//                        || TextUtils.isEmpty(it.second.url)
+//                ) {
+//                    return@forEach
+//                }
+//                if (!it.second.enabled) {
+//                    return@forEach
+//                }
+//                val url = Utils.idnToASCII(it.second.url)
+//                if (!Utils.isValidUrl(url)) {
+//                    return@forEach
+//                }
+//                Log.d(ANG_PACKAGE, url)
+//                lifecycleScope.launch(Dispatchers.IO) {
+//                    val configText = try {
+//                        Utils.getUrlContentWithCustomUserAgent(url)
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                        launch(Dispatchers.Main) {
+//                            toast("\"" + it.second.remarks + "\" " + getString(R.string.toast_failure))
+//                        }
+//                        return@launch
+//                    }
+//                    launch(Dispatchers.Main) {
+//                        importBatchConfig(configText, it.first)
+//                    }
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return false
+//        }
+//        return true
     }
 
     /**

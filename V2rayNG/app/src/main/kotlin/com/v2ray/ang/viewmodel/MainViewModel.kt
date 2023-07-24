@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
@@ -17,6 +18,8 @@ import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.DialogConfigFilterBinding
 import com.v2ray.ang.datasource.ConfigDatasourceImpl
+import com.v2ray.ang.datasource.SubscriptionDatasource
+import com.v2ray.ang.datasource.SubscriptionDatasourceImpl
 import com.v2ray.ang.dto.*
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.repo.ConfigRepositoryImpl
@@ -41,9 +44,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
 
+    val subsList = MutableLiveData<List<Pair<String, String>>>()
+
     private val repository = ConfigRepositoryImpl(
         datasource = ConfigDatasourceImpl()
     )
+
+    private val subDatasource = SubscriptionDatasourceImpl()
 
 
     init {
@@ -55,6 +62,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun updateSubs() {
+        viewModelScope.launch {
+            val configs = subDatasource.getConfigsFromAllSubs()
+            subsList.value = configs
+        }
+    }
+
     fun startListenBroadcast() {
         isRunning.value = false
         getApplication<AngApplication>().registerReceiver(mMsgReceiver, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
