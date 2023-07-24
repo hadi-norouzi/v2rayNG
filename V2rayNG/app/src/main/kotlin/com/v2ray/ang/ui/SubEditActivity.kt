@@ -156,6 +156,9 @@ class SubEditActivity : BaseActivity() {
             subscriptionUpdaterWork,
             ExistingPeriodicWorkPolicy.UPDATE,
             PeriodicWorkRequest.Builder(UpdateTask::class.java, 15, TimeUnit.MINUTES)
+                .apply {
+                    setInitialDelay(15, TimeUnit.MINUTES)
+                }
                 .setConstraints(
                     Constraints(
                         NetworkType.CONNECTED,

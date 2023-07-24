@@ -16,11 +16,14 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.DialogConfigFilterBinding
+import com.v2ray.ang.datasource.ConfigDatasourceImpl
 import com.v2ray.ang.dto.*
 import com.v2ray.ang.extension.toast
+import com.v2ray.ang.repo.ConfigRepositoryImpl
 import com.v2ray.ang.util.*
 import com.v2ray.ang.util.MmkvManager.KEY_ANG_CONFIGS
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
 import java.util.*
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -38,6 +41,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
 
+    private val repository = ConfigRepositoryImpl(
+        datasource = ConfigDatasourceImpl()
+    )
+
+
+    init {
+        viewModelScope.launch {
+            repository.configs.collect {
+                println("configs")
+                println(it)
+                serversCache.addAll(it)
+            }
+        }
+    }
     fun startListenBroadcast() {
         isRunning.value = false
         getApplication<AngApplication>().registerReceiver(mMsgReceiver, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
@@ -53,12 +70,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun reloadServerList() {
-        serverList = MmkvManager.decodeServerList()
-        updateCache()
+        viewModelScope.launch {
+//            dataSource.getAll()
+        }
         updateListAction.value = -1
     }
 
     fun removeServer(guid: String) {
+
         serverList.remove(guid)
         MmkvManager.removeServer(guid)
         val index = getPosition(guid)
@@ -84,20 +103,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         mainStorage?.encode(KEY_ANG_CONFIGS, Gson().toJson(serverList))
     }
 
-    @Synchronized
-    fun updateCache() {
-        serversCache.clear()
-        for (guid in serverList) {
-            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-            if (subscriptionId.isNotEmpty() && subscriptionId != config.subscriptionId) {
-                continue
-            }
-
-            if (keywordFilter.isEmpty() || config.remarks.contains(keywordFilter)) {
-                serversCache.add(ServersCache(guid, config))
-            }
-        }
-    }
 
     fun testAllTcping() {
         tcpingTestScope.coroutineContext[Job]?.cancelChildren()

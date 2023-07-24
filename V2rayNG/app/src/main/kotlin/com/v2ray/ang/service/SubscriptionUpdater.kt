@@ -17,6 +17,7 @@ import androidx.work.multiprocess.RemoteWorkManager
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.R
 import com.v2ray.ang.util.MmkvManager
+import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.delay
 import java.util.concurrent.TimeUnit
 
@@ -46,6 +47,10 @@ class UpdateTask(context: Context, params: WorkerParameters) :
             val subscription = i.second
 
             delay(10000)
+
+            val configs = Utils.getUrlContentWithCustomUserAgent(subscription.url)
+
+            println("updated configs: $configs")
 
 
             notification.setContentText(subscription.remarks)

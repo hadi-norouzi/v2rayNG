@@ -3,9 +3,10 @@ package com.v2ray.ang
 import android.content.Context
 import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
+import androidx.work.Configuration
 import com.tencent.mmkv.MMKV
 
-class AngApplication : MultiDexApplication() {
+class AngApplication : MultiDexApplication(), Configuration.Provider {
     companion object {
         const val PREF_LAST_VERSION = "pref_last_version"
         lateinit var application: AngApplication
@@ -27,9 +28,16 @@ class AngApplication : MultiDexApplication() {
         val defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         firstRun = defaultSharedPreferences.getInt(PREF_LAST_VERSION, 0) != BuildConfig.VERSION_CODE
         if (firstRun)
-            defaultSharedPreferences.edit().putInt(PREF_LAST_VERSION, BuildConfig.VERSION_CODE).apply()
+            defaultSharedPreferences.edit().putInt(PREF_LAST_VERSION, BuildConfig.VERSION_CODE)
+                .apply()
 
         //Logger.init().logLevel(if (BuildConfig.DEBUG) LogLevel.FULL else LogLevel.NONE)
         MMKV.initialize(this)
+    }
+
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
+            .setDefaultProcessName("${BuildConfig.APPLICATION_ID}:bg")
+            .build()
     }
 }
