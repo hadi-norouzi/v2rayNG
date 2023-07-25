@@ -60,40 +60,12 @@ class ConfigDatasourceImpl : ConfigDatasource {
         TODO("Not yet implemented")
     }
 
-
-    //    override  fun getAll(filter: String?) :Flow<List<ServersCache>>=flow {
-//        val json = mainStorage?.decodeString(MmkvManager.KEY_ANG_CONFIGS)
-//        val configs: MutableList<String> = if (json.isNullOrBlank()) {
-//            mutableListOf()
-//        } else {
-//            Gson().fromJson(json, Array<String>::class.java).toMutableList()
-//        }
-//
-//        val serversCache = mutableListOf<ServersCache>()
-//
-//        for (guid in configs) {
-//            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-////            if (subscriptionId.isNotEmpty() && subscriptionId != config.subscriptionId) {
-////                continue
-////            }
-//
-//            serversCache.add(ServersCache(guid, config))
-////            if (keywordFilter.isEmpty() || config.remarks.contains(keywordFilter)) {
-////            }
-//        }
-//        Log.d(TAG, "getAllConfigs: $serversCache")
-//        serversCache.asFlow()
-//    }
-//    override fun getAll(filter: String?): Flow<List<ServersCache>> = flow{
-//
-//    }.flowOn(Dispatchers.IO)
-
     override suspend fun remove(index: Int) {
         TODO("Not yet implemented")
     }
 
     override suspend fun remove(config: ServersCache) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun update(index: Int, newConfig: ServersCache) {

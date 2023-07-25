@@ -3,13 +3,8 @@ package com.v2ray.ang.datasource
 import android.net.Uri
 import android.util.Log
 import com.v2ray.ang.AppConfig
-import com.v2ray.ang.R
-import com.v2ray.ang.extension.toast
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.Utils
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface SubscriptionDatasource {
 
@@ -57,14 +52,13 @@ class SubscriptionDatasourceImpl : SubscriptionDatasource {
 
             Log.d(AppConfig.ANG_PACKAGE, url)
 
-            val configText = withContext(Dispatchers.IO) {
-                return@withContext try {
-                    Utils.getUrlContentWithCustomUserAgent(url)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    null
-                }
+            val configText = try {
+                Utils.getUrlContentWithCustomUserAgent(url)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
+
             if (configText.isNullOrEmpty()) continue
             configs.add(sub.first to configText)
 

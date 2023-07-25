@@ -8,7 +8,6 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
@@ -18,15 +17,13 @@ import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.DialogConfigFilterBinding
 import com.v2ray.ang.datasource.ConfigDatasourceImpl
-import com.v2ray.ang.datasource.SubscriptionDatasource
 import com.v2ray.ang.datasource.SubscriptionDatasourceImpl
 import com.v2ray.ang.dto.*
 import com.v2ray.ang.extension.toast
-import com.v2ray.ang.repo.ConfigRepositoryImpl
+import com.v2ray.ang.repository.ConfigRepositoryImpl
 import com.v2ray.ang.util.*
 import com.v2ray.ang.util.MmkvManager.KEY_ANG_CONFIGS
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import java.util.*
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -64,9 +61,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun updateSubs() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val configs = subDatasource.getConfigsFromAllSubs()
-            subsList.value = configs
+            subsList.postValue(configs)
         }
     }
 
@@ -92,6 +89,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun removeServer(guid: String) {
+
+
 
         serverList.remove(guid)
         MmkvManager.removeServer(guid)
