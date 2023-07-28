@@ -54,7 +54,7 @@ class ConfigDatasourceImpl : ConfigDatasource {
 //            }
         }
         emit(serversCache)
-    }
+    }.flowOn(Dispatchers.IO)
 
     override fun getAll(filter: String?): Flow<List<ServersCache>> {
         TODO("Not yet implemented")
@@ -62,6 +62,7 @@ class ConfigDatasourceImpl : ConfigDatasource {
 
     override suspend fun remove(index: Int) {
         TODO("Not yet implemented")
+
     }
 
     override suspend fun remove(config: ServersCache) {
