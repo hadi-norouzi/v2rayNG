@@ -29,19 +29,21 @@ import com.v2ray.ang.util.Utils
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
-import kotlin.reflect.KFunction1
 
 class MainRecyclerAdapter(
     val activity: MainActivity,
+    private val configs: MutableList<ServerConfig>,
     private val onItemEditClicked: (Int, ServerConfig) -> Unit,
     private val onItemDeleteClicked: (Int, ServerConfig) -> Unit,
+    private val onShareClicked: (Int, ServerConfig) -> Unit,
+    private val onItemTap: (Int) -> Unit,
 ) : RecyclerView.Adapter<MainRecyclerAdapter.BaseViewHolder>(), ItemTouchHelperAdapter {
     companion object {
         private const val VIEW_TYPE_ITEM = 1
         private const val VIEW_TYPE_FOOTER = 2
     }
 
-    private var mActivity: MainActivity = activity
+        private var mActivity: MainActivity = activity
     private val mainStorage by lazy {
         MMKV.mmkvWithID(
             MmkvManager.ID_MAIN,
@@ -55,17 +57,15 @@ class MainRecyclerAdapter(
             MMKV.MULTI_PROCESS_MODE
         )
     }
-    private val share_method: Array<out String> by lazy {
-        mActivity.resources.getStringArray(R.array.share_method)
-    }
+
     var isRunning = false
 
-    override fun getItemCount() = mActivity.mainViewModel.serversCache.size + 1
+    override fun getItemCount() = configs.size + 1
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         if (holder is MainViewHolder) {
             val guid = mActivity.mainViewModel.serversCache[position].guid
-            val config = mActivity.mainViewModel.serversCache[position].config
+            val config = configs[position]
 //            //filter
 //            if (mActivity.mainViewModel.subscriptionId.isNotEmpty()
 //                && mActivity.mainViewModel.subscriptionId != config.subscriptionId
@@ -108,12 +108,10 @@ class MainRecyclerAdapter(
                 holder.itemMainBinding.tvSubscription.text = sub.remarks
             }
 
-            var shareOptions = share_method.asList()
             when (config.configType) {
                 EConfigType.CUSTOM -> {
                     holder.itemMainBinding.tvType.text =
                         mActivity.getString(R.string.server_customize_config)
-                    shareOptions = shareOptions.takeLast(1)
                 }
 
                 EConfigType.VLESS -> {
@@ -128,39 +126,7 @@ class MainRecyclerAdapter(
                 "${outbound?.getServerAddress()} : ${outbound?.getServerPort()}"
 
             holder.itemMainBinding.layoutShare.setOnClickListener {
-                AlertDialog.Builder(mActivity).setItems(shareOptions.toTypedArray()) { _, i ->
-                    try {
-                        when (i) {
-                            0 -> {
-                                if (config.configType == EConfigType.CUSTOM) {
-                                    shareFullContent(guid)
-                                } else {
-                                    val ivBinding =
-                                        ItemQrcodeBinding.inflate(LayoutInflater.from(mActivity))
-                                    ivBinding.ivQcode.setImageBitmap(
-                                        AngConfigManager.share2QRCode(
-                                            guid
-                                        )
-                                    )
-                                    AlertDialog.Builder(mActivity).setView(ivBinding.root).show()
-                                }
-                            }
-
-                            1 -> {
-                                if (AngConfigManager.share2Clipboard(mActivity, guid) == 0) {
-                                    mActivity.toast(R.string.toast_success)
-                                } else {
-                                    mActivity.toast(R.string.toast_failure)
-                                }
-                            }
-
-                            2 -> shareFullContent(guid)
-                            else -> mActivity.toast("else")
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }.show()
+                onShareClicked(position, config)
             }
 
             holder.itemMainBinding.layoutEdit.setOnClickListener {
@@ -171,53 +137,13 @@ class MainRecyclerAdapter(
             }
 
             holder.itemMainBinding.infoContainer.setOnClickListener {
-                val selected = mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER)
-                if (guid != selected) {
-                    mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, guid)
-                    if (!TextUtils.isEmpty(selected)) {
-                        notifyItemChanged(mActivity.mainViewModel.getPosition(selected!!))
-                    }
-                    notifyItemChanged(mActivity.mainViewModel.getPosition(guid))
-                    if (isRunning) {
-                        mActivity.showCircle()
-                        Utils.stopVService(mActivity)
-                        Observable.timer(500, TimeUnit.MILLISECONDS)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe {
-                                V2RayServiceManager.startV2Ray(mActivity)
-                                mActivity.hideCircle()
-                            }
-                    }
-                }
+
+                onItemTap(position)
             }
         }
         if (holder is FooterViewHolder) {
-            //if (activity?.defaultDPreference?.getPrefBoolean(AppConfig.PREF_INAPP_BUY_IS_PREMIUM, false)) {
-            if (true) {
-                holder.itemFooterBinding.layoutEdit.visibility = View.INVISIBLE
-            } else {
-                holder.itemFooterBinding.layoutEdit.setOnClickListener {
-                    Utils.openUri(
-                        mActivity,
-                        "${Utils.decode(AppConfig.promotionUrl)}?t=${System.currentTimeMillis()}"
-                    )
-                }
-            }
+            holder.itemFooterBinding.layoutEdit.visibility = View.INVISIBLE
         }
-    }
-
-    private fun shareFullContent(guid: String) {
-        if (AngConfigManager.shareFullContent2Clipboard(mActivity, guid) == 0) {
-            mActivity.toast(R.string.toast_success)
-        } else {
-            mActivity.toast(R.string.toast_failure)
-        }
-    }
-
-    private fun removeServer(guid: String, position: Int) {
-        mActivity.mainViewModel.removeServer(guid)
-        notifyItemRemoved(position)
-        notifyItemRangeChanged(position, mActivity.mainViewModel.serversCache.size)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {

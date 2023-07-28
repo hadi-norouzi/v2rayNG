@@ -21,6 +21,7 @@ import androidx.core.view.GravityCompat
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.recyclerview.widget.ItemTouchHelper
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -30,6 +31,7 @@ import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.databinding.ActivityMainBinding
+import com.v2ray.ang.databinding.ItemQrcodeBinding
 import com.v2ray.ang.dto.EConfigType
 import com.v2ray.ang.dto.ServerConfig
 import com.v2ray.ang.extension.toast
@@ -78,8 +80,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         adapter = MainRecyclerAdapter(
             this,
+            mutableListOf(),
             onItemEditClicked = this::onItemEdit,
             onItemDeleteClicked = this::onItemDelete,
+            onShareClicked = this::onItemShareClicked,
+            onItemTap = this::onItemTap
         )
 
         binding.fab.setOnClickListener {
@@ -132,20 +137,101 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             RxPermissions(this).request(Manifest.permission.POST_NOTIFICATIONS).subscribe {
-                    if (!it) toast(R.string.toast_permission_denied)
-                }
+                if (!it) toast(R.string.toast_permission_denied)
+            }
         }
         listenToSubUpdate()
     }
 
     private fun onItemEdit(index: Int, config: ServerConfig) {
-
         val intent = Intent().putExtra("guid", mainViewModel.serversCache[index].guid)
             .putExtra("isRunning", mainViewModel.isRunning.value)
         if (config.configType == EConfigType.CUSTOM) {
             startActivity(intent.setClass(this, ServerCustomConfigActivity::class.java))
         } else {
             startActivity(intent.setClass(this, ServerActivity::class.java))
+        }
+    }
+
+    private val share_method: Array<out String> by lazy {
+        resources.getStringArray(R.array.share_method)
+    }
+
+    private fun onItemShareClicked(index: Int, config: ServerConfig) {
+
+        val guid = mainViewModel.serversCache[index].guid
+
+
+        var shareOptions = share_method.asList()
+        if (config.configType == EConfigType.CUSTOM) {
+
+            shareOptions = shareOptions.takeLast(1)
+
+        }
+
+        AlertDialog.Builder(this).setItems(shareOptions.toTypedArray()) { _, i ->
+            try {
+                when (i) {
+                    0 -> {
+                        if (config.configType == EConfigType.CUSTOM) {
+                            shareFullContent(guid)
+                        } else {
+                            val ivBinding =
+                                ItemQrcodeBinding.inflate(LayoutInflater.from(this))
+                            ivBinding.ivQcode.setImageBitmap(
+                                AngConfigManager.share2QRCode(
+                                    guid
+                                )
+                            )
+                            AlertDialog.Builder(this).setView(ivBinding.root).show()
+                        }
+                    }
+
+                    1 -> {
+                        if (AngConfigManager.share2Clipboard(this, guid) == 0) {
+                            toast(R.string.toast_success)
+                        } else {
+                            toast(R.string.toast_failure)
+                        }
+                    }
+
+                    2 -> shareFullContent(guid)
+                    else -> toast("else")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.show()
+    }
+
+    private fun shareFullContent(guid: String) {
+        if (AngConfigManager.shareFullContent2Clipboard(this, guid) == 0) {
+            toast(R.string.toast_success)
+        } else {
+            toast(R.string.toast_failure)
+        }
+    }
+
+    private fun onItemTap(index: Int) {
+        val guid = mainViewModel.serversCache[index].guid
+
+        val selected = mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER)
+        if (guid != selected) {
+            mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, guid)
+            if (!TextUtils.isEmpty(selected)) {
+                adapter.notifyItemChanged(mainViewModel.getPosition(selected!!))
+            }
+            adapter.notifyItemChanged(mainViewModel.getPosition(guid))
+            if (mainViewModel.isRunning.value == true) {
+                showCircle()
+                Utils.stopVService(this)
+                Observable.timer(500, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe {
+                        V2RayServiceManager.startV2Ray(this)
+                        hideCircle()
+                    }
+            }
         }
     }
 
@@ -157,10 +243,18 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
 //                        removeServer(guid, position)
+
+                        mainViewModel.removeServer(guid)
+                        adapter.notifyItemRemoved(index)
+                        adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.size)
+
                     }
                     .show()
             } else {
 //                removeServer(guid, position)
+                mainViewModel.removeServer(guid)
+                adapter.notifyItemRemoved(index)
+                adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.size)
             }
         }
     }
@@ -416,19 +510,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
 //        } catch (e: Exception) {
         RxPermissions(this).request(Manifest.permission.CAMERA).subscribe {
-                if (it) if (forConfig) scanQRCodeForConfig.launch(
-                    Intent(
-                        this,
-                        ScannerActivity::class.java
-                    )
+            if (it) if (forConfig) scanQRCodeForConfig.launch(
+                Intent(
+                    this,
+                    ScannerActivity::class.java
                 )
-                else scanQRCodeForUrlToCustomConfig.launch(
-                    Intent(
-                        this, ScannerActivity::class.java
-                    )
+            )
+            else scanQRCodeForUrlToCustomConfig.launch(
+                Intent(
+                    this, ScannerActivity::class.java
                 )
-                else toast(R.string.toast_permission_denied)
-            }
+            )
+            else toast(R.string.toast_permission_denied)
+        }
 //        }
         return true
     }
@@ -644,16 +738,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
         RxPermissions(this).request(permission).subscribe {
-                if (it) {
-                    try {
-                        contentResolver.openInputStream(uri).use { input ->
-                            importCustomizeConfig(input?.bufferedReader()?.readText())
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+            if (it) {
+                try {
+                    contentResolver.openInputStream(uri).use { input ->
+                        importCustomizeConfig(input?.bufferedReader()?.readText())
                     }
-                } else toast(R.string.toast_permission_denied)
-            }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else toast(R.string.toast_permission_denied)
+        }
     }
 
     /**
@@ -744,9 +838,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             R.id.settings -> {
                 startActivity(
                     Intent(this, SettingsActivity::class.java).putExtra(
-                            "isRunning",
-                            mainViewModel.isRunning.value == true
-                        )
+                        "isRunning",
+                        mainViewModel.isRunning.value == true
+                    )
                 )
             }
 
