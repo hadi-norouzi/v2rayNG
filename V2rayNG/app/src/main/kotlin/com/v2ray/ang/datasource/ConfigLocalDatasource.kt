@@ -1,21 +1,14 @@
 package com.v2ray.ang.datasource
 
-import android.util.Log
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.dto.ServersCache
 import com.v2ray.ang.util.MmkvManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 
-interface ConfigDatasource {
+interface ConfigLocalDatasource {
 
     val configs: StateFlow<List<ServersCache>>
 
@@ -30,7 +23,7 @@ interface ConfigDatasource {
     suspend fun update(config: ServersCache, newConfig: ServersCache)
 }
 
-class ConfigDatasourceImpl : ConfigDatasource {
+class ConfigLocalDatasourceImpl : ConfigLocalDatasource {
     private val TAG = "ConfigDatasource"
     private val mainStorage by lazy {
         MMKV.mmkvWithID(

@@ -16,7 +16,8 @@ import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.DialogConfigFilterBinding
-import com.v2ray.ang.datasource.ConfigDatasourceImpl
+import com.v2ray.ang.datasource.ConfigLocalDatasourceImpl
+import com.v2ray.ang.datasource.ConfigRemoteDatasourceImpl
 import com.v2ray.ang.datasource.SubscriptionDatasourceImpl
 import com.v2ray.ang.dto.*
 import com.v2ray.ang.extension.toast
@@ -54,7 +55,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val subsList = MutableLiveData<List<Pair<String, String>>>()
 
     private val repository = ConfigRepositoryImpl(
-        datasource = ConfigDatasourceImpl()
+        datasource = ConfigLocalDatasourceImpl(),
+        remoteDatasource = ConfigRemoteDatasourceImpl()
     )
 
     private val subDatasource = SubscriptionDatasourceImpl()

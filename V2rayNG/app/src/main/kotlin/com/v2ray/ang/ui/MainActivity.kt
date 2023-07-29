@@ -105,8 +105,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             if (mainViewModel.isRunning.value == true) {
                 setTestState(getString(R.string.connection_test_testing))
                 mainViewModel.testCurrentServerRealPing()
-            } else {
-//                tv_test_state.text = getString(R.string.connection_test_fail)
             }
         }
 
@@ -161,12 +159,9 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         val guid = mainViewModel.serversCache[index].guid
 
-
         var shareOptions = share_method.asList()
         if (config.configType == EConfigType.CUSTOM) {
-
             shareOptions = shareOptions.takeLast(1)
-
         }
 
         AlertDialog.Builder(this).setItems(shareOptions.toTypedArray()) { _, i ->
@@ -348,10 +343,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     public override fun onResume() {
         super.onResume()
         mainViewModel.reloadServerList()
-    }
-
-    public override fun onPause() {
-        super.onPause()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
