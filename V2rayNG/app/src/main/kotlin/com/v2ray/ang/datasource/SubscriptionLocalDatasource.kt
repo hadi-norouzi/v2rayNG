@@ -3,16 +3,17 @@ package com.v2ray.ang.datasource
 import android.net.Uri
 import android.util.Log
 import com.v2ray.ang.AppConfig
+import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.Utils
 
 interface SubscriptionDatasource {
 
-    suspend fun add()
+    suspend fun add(vararg sub: SubscriptionItem)
 
-    suspend fun remove()
+    suspend fun remove(vararg sub: SubscriptionItem)
 
-    suspend fun update()
+    suspend fun update(sub: SubscriptionItem)
 
     suspend fun getConfigs(uri: Uri)
 
@@ -21,15 +22,15 @@ interface SubscriptionDatasource {
 
 
 class SubscriptionDatasourceImpl : SubscriptionDatasource {
-    override suspend fun add() {
+    override suspend fun add(vararg sub: SubscriptionItem) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun remove() {
+    override suspend fun remove(vararg sub: SubscriptionItem) {
         TODO("Not yet implemented")
     }
 
-    override suspend fun update() {
+    override suspend fun update(sub: SubscriptionItem) {
         TODO("Not yet implemented")
     }
 

@@ -80,7 +80,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         adapter = MainRecyclerAdapter(
             this,
-            mutableListOf(),
+            mainViewModel.serversCache,
             onItemEditClicked = this::onItemEdit,
             onItemDeleteClicked = this::onItemDelete,
             onShareClicked = this::onItemShareClicked,

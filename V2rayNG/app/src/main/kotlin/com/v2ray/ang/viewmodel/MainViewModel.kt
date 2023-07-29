@@ -134,26 +134,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
 
     fun testAllTcping() {
-        tcpingTestScope.coroutineContext[Job]?.cancelChildren()
-        SpeedtestUtil.closeAllTcpSockets()
-        MmkvManager.clearAllTestDelayResults()
-        updateListAction.value = -1 // update all
-
-        getApplication<AngApplication>().toast(R.string.connection_test_testing)
-        for (item in serversCache) {
-            item.config.getProxyOutbound()?.let { outbound ->
-                val serverAddress = outbound.getServerAddress()
-                val serverPort = outbound.getServerPort()
-                if (serverAddress != null && serverPort != null) {
-                    tcpingTestScope.launch {
-                        val testResult = SpeedtestUtil.tcping(serverAddress, serverPort)
-                        launch(Dispatchers.Main) {
-                            MmkvManager.encodeServerTestDelayMillis(item.guid, testResult)
-                            updateListAction.value = getPosition(item.guid)
-                        }
-                    }
-                }
-            }
+        viewModelScope.launch {
+            repository.testPing(serversCache)
         }
     }
 

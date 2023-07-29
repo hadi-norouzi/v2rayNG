@@ -2,6 +2,7 @@ package com.v2ray.ang.datasource
 
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
+import com.v2ray.ang.dto.ServerConfig
 import com.v2ray.ang.dto.ServersCache
 import com.v2ray.ang.util.MmkvManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,11 +13,11 @@ interface ConfigLocalDatasource {
 
     val configs: StateFlow<List<ServersCache>>
 
-    fun getAll(filter: String? = null)
+    suspend fun getAll(filter: String? = null): List<ServersCache>
 
     suspend fun remove(index: Int)
 
-    suspend fun remove(config: ServersCache)
+    suspend fun remove(config: ServersCache): Boolean
 
     suspend fun update(index: Int, newConfig: ServersCache)
 
@@ -59,36 +60,36 @@ class ConfigLocalDatasourceImpl : ConfigLocalDatasource {
     override val configs: StateFlow<List<ServersCache>>
         get() = stateConfigs
 
-    override fun getAll(filter: String?) {
+    override suspend fun getAll(filter: String?): List<ServersCache> {
         val json = mainStorage?.decodeString(MmkvManager.KEY_ANG_CONFIGS)
         val configs: MutableList<String> = if (json.isNullOrBlank()) {
             mutableListOf()
         } else {
             Gson().fromJson(json, Array<String>::class.java).toMutableList()
         }
-        val serversCache = mutableListOf<ServersCache>()
+        var serversCache = mutableListOf<ServersCache>()
 
         for (guid in configs) {
             val config = MmkvManager.decodeServerConfig(guid) ?: continue
 //            if (subscriptionId.isNotEmpty() && subscriptionId != config.subscriptionId) {
 //                continue
 //            }
-
             serversCache.add(ServersCache(guid, config))
-//            if (keywordFilter.isEmpty() || config.remarks.contains(keywordFilter)) {
-//            }
         }
-        stateConfigs.value = serversCache
+        if (!filter.isNullOrEmpty()) {
+            serversCache =
+                serversCache.filter { it.config.remarks.contains(filter) }.toMutableList()
+        }
+        return serversCache
     }
 
     override suspend fun remove(index: Int) {
         stateConfigs.value = emptyList()
     }
 
-    override suspend fun remove(config: ServersCache) {
+    override suspend fun remove(config: ServersCache): Boolean {
 
-
-        stateConfigs.value.toMutableList().firstOrNull {
+        getAll().firstOrNull {
             config.guid == it.guid
         }?.let { server ->
             MmkvManager.removeServer(server.guid)
@@ -97,7 +98,9 @@ class ConfigLocalDatasourceImpl : ConfigLocalDatasource {
                 updated.remove(server)
                 updated
             }
+            return true
         }
+        return false
 
     }
 

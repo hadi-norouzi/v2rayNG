@@ -12,7 +12,8 @@ data class ServerConfig(
         val addedTime: Long = System.currentTimeMillis(),
         var remarks: String = "",
         val outboundBean: V2rayConfig.OutboundBean? = null,
-        var fullConfig: V2rayConfig? = null
+        var fullConfig: V2rayConfig? = null,
+        var ping: Long = -1L,
 ) {
     companion object {
         fun create(configType: EConfigType): ServerConfig {

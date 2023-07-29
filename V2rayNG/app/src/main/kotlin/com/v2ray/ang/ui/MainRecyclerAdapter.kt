@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 
 class MainRecyclerAdapter(
     val activity: MainActivity,
-    private val configs: MutableList<ServerConfig>,
+    private val configs: MutableList<ServersCache>,
     private val onItemEditClicked: (Int, ServerConfig) -> Unit,
     private val onItemDeleteClicked: (Int, ServerConfig) -> Unit,
     private val onShareClicked: (Int, ServerConfig) -> Unit,
@@ -64,8 +64,8 @@ class MainRecyclerAdapter(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         if (holder is MainViewHolder) {
-            val guid = mActivity.mainViewModel.serversCache[position].guid
-            val config = configs[position]
+            val guid = configs[position].guid
+            val config = configs[position].config
 //            //filter
 //            if (mActivity.mainViewModel.subscriptionId.isNotEmpty()
 //                && mActivity.mainViewModel.subscriptionId != config.subscriptionId
