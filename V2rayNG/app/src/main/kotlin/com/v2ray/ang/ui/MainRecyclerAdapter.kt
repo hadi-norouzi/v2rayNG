@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 
 class MainRecyclerAdapter(
     val activity: MainActivity,
-    private val configs: MutableList<ServersCache>,
+    var configs: MutableList<ServersCache>,
     private val onItemEditClicked: (Int, ServerConfig) -> Unit,
     private val onItemDeleteClicked: (Int, ServerConfig) -> Unit,
     private val onShareClicked: (Int, ServerConfig) -> Unit,
@@ -78,20 +78,22 @@ class MainRecyclerAdapter(
             val outbound = config.getProxyOutbound()
             val aff = MmkvManager.decodeServerAffiliationInfo(guid)
 
+
+
             holder.itemMainBinding.tvName.text = config.remarks
             holder.itemView.setBackgroundColor(Color.TRANSPARENT)
             holder.itemMainBinding.tvTestResult.text = aff?.getTestDelayString() ?: ""
             if ((aff?.testDelayMillis ?: 0L) < 0L) {
                 holder.itemMainBinding.tvTestResult.setTextColor(
                     ContextCompat.getColor(
-                        mActivity,
+                        holder.itemView.context,
                         R.color.colorPingRed
                     )
                 )
             } else {
                 holder.itemMainBinding.tvTestResult.setTextColor(
                     ContextCompat.getColor(
-                        mActivity,
+                        holder.itemView.context,
                         R.color.colorPing
                     )
                 )
@@ -111,7 +113,7 @@ class MainRecyclerAdapter(
             when (config.configType) {
                 EConfigType.CUSTOM -> {
                     holder.itemMainBinding.tvType.text =
-                        mActivity.getString(R.string.server_customize_config)
+                        holder.itemView.context.getString(R.string.server_customize_config)
                 }
 
                 EConfigType.VLESS -> {
@@ -169,7 +171,7 @@ class MainRecyclerAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == mActivity.mainViewModel.serversCache.size) {
+        return if (position == configs.size) {
             VIEW_TYPE_FOOTER
         } else {
             VIEW_TYPE_ITEM
@@ -193,7 +195,7 @@ class MainRecyclerAdapter(
         BaseViewHolder(itemFooterBinding.root)
 
     override fun onItemDismiss(position: Int) {
-        val guid = mActivity.mainViewModel.serversCache.getOrNull(position)?.guid ?: return
+        val guid = mActivity.mainViewModel.serversCache.value?.getOrNull(position)?.guid ?: return
         if (guid != mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER)) {
 //            mActivity.alert(R.string.del_config_comfirm) {
 //                positiveButton(android.R.string.ok) {

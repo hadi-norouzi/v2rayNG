@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.work.Constraints
@@ -47,6 +48,8 @@ class SubEditActivity : BaseActivity() {
             clearServer()
         }
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+
     }
 
     /**
@@ -57,6 +60,10 @@ class SubEditActivity : BaseActivity() {
         binding.etUrl.text = Utils.getEditable(subItem.url)
         binding.chkEnable.isChecked = subItem.enabled
         binding.autoUpdateCheck.isChecked = subItem.autoUpdate
+        binding.updateInterval.text = Utils.getEditable(subItem.updateInterval?.toString() ?: "1440")
+        binding.autoUpdateCheck.setOnCheckedChangeListener { _, checked ->
+            binding.intervalSection.visibility = if (checked) View.VISIBLE else View.GONE
+        }
         return true
     }
 
@@ -67,6 +74,7 @@ class SubEditActivity : BaseActivity() {
         binding.etRemarks.text = null
         binding.etUrl.text = null
         binding.chkEnable.isChecked = true
+        binding.autoUpdateCheck.isChecked = false
         return true
     }
 
@@ -88,9 +96,15 @@ class SubEditActivity : BaseActivity() {
         subItem.url = binding.etUrl.text.toString()
         subItem.enabled = binding.chkEnable.isChecked
         subItem.autoUpdate = binding.autoUpdateCheck.isChecked
+        subItem.updateInterval = binding.updateInterval.text.toString().toLong()
 
         if (TextUtils.isEmpty(subItem.remarks)) {
             toast(R.string.sub_setting_remarks)
+            return false
+        }
+
+        if (subItem.updateInterval != null && subItem.updateInterval!! < 15) {
+            toast(R.string.sub_setting_interval_error)
             return false
         }
 //        if (TextUtils.isEmpty(subItem.url)) {
@@ -98,9 +112,12 @@ class SubEditActivity : BaseActivity() {
 //            return false
 //        }
 
+
         subStorage?.encode(subId, Gson().toJson(subItem))
 
-        configureSubscriptionUpdater()
+        if (subItem.autoUpdate && subItem.updateInterval != null) {
+            configureSubscriptionUpdater(subItem.updateInterval!!)
+        }
         toast(R.string.toast_success)
         finish()
         return true
@@ -149,15 +166,14 @@ class SubEditActivity : BaseActivity() {
 
     private val subscriptionUpdaterWork = "subscription-updater"
 
-    fun configureSubscriptionUpdater() {
+    private fun configureSubscriptionUpdater(interval: Long) {
         val rw = RemoteWorkManager.getInstance(applicationContext as AngApplication)
-        rw.cancelUniqueWork(subscriptionUpdaterWork)
         rw.enqueueUniquePeriodicWork(
             subscriptionUpdaterWork,
             ExistingPeriodicWorkPolicy.UPDATE,
-            PeriodicWorkRequest.Builder(UpdateTask::class.java, 15, TimeUnit.MINUTES)
+            PeriodicWorkRequest.Builder(UpdateTask::class.java, interval, TimeUnit.MINUTES)
                 .apply {
-                    setInitialDelay(15, TimeUnit.MINUTES)
+                    setInitialDelay(interval, TimeUnit.MINUTES)
                 }
                 .setConstraints(
                     Constraints(

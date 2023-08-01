@@ -80,7 +80,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         adapter = MainRecyclerAdapter(
             this,
-            mainViewModel.serversCache,
+            mainViewModel.serversCache.value!!.toMutableList(),
             onItemEditClicked = this::onItemEdit,
             onItemDeleteClicked = this::onItemDelete,
             onShareClicked = this::onItemShareClicked,
@@ -139,10 +139,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
         listenToSubUpdate()
+
+        mainViewModel.serversCache.observe(this) {
+
+            adapter.configs = it.toMutableList()
+            adapter.notifyDataSetChanged()
+        }
     }
 
     private fun onItemEdit(index: Int, config: ServerConfig) {
-        val intent = Intent().putExtra("guid", mainViewModel.serversCache[index].guid)
+        val intent = Intent().putExtra("guid", mainViewModel.serversCache.value!![index].guid)
             .putExtra("isRunning", mainViewModel.isRunning.value)
         if (config.configType == EConfigType.CUSTOM) {
             startActivity(intent.setClass(this, ServerCustomConfigActivity::class.java))
@@ -157,7 +163,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun onItemShareClicked(index: Int, config: ServerConfig) {
 
-        val guid = mainViewModel.serversCache[index].guid
+        val guid = mainViewModel.serversCache.value!![index].guid
 
         var shareOptions = share_method.asList()
         if (config.configType == EConfigType.CUSTOM) {
@@ -208,7 +214,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun onItemTap(index: Int) {
-        val guid = mainViewModel.serversCache[index].guid
+        val guid = mainViewModel.serversCache.value!![index].guid
 
         val selected = mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER)
         if (guid != selected) {
@@ -232,7 +238,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
     private fun onItemDelete(index: Int, config: ServerConfig) {
 
-        val guid = mainViewModel.serversCache[index].guid
+        val guid = mainViewModel.serversCache.value!![index].guid
         if (guid != mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER)) {
             if (settingsStorage?.decodeBool(AppConfig.PREF_CONFIRM_REMOVE) == true) {
                 AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
@@ -241,7 +247,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
                         mainViewModel.removeServer(guid)
                         adapter.notifyItemRemoved(index)
-                        adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.size)
+                        adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.value!!.size)
 
                     }
                     .show()
@@ -249,7 +255,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //                removeServer(guid, position)
                 mainViewModel.removeServer(guid)
                 adapter.notifyItemRemoved(index)
-                adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.size)
+                adapter.notifyItemRangeChanged(index, mainViewModel.serversCache.value!!.size)
             }
         }
     }

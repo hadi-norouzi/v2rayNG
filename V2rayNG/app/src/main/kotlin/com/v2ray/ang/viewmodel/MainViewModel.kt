@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
@@ -45,7 +46,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var subscriptionId: String = ""
     var keywordFilter: String = ""
         private set
-    val serversCache = mutableListOf<ServersCache>()
+    val serversCache = MutableLiveData<List<ServersCache>>(emptyList())
     val isRunning by lazy { MutableLiveData<Boolean>() }
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
@@ -68,10 +69,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.configs.collect {
                 println("configs")
                 println(it)
-//                it.forEach {
-//                    val key = MmkvManager.encodeServerConfig("", it)
-//                }
-                serversCache.addAll(it)
+                serversCache.value = it
             }
         }
     }
@@ -109,7 +107,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removeServer(guid: String) {
         viewModelScope.launch {
-            serversCache.firstOrNull { it.guid == guid }?.let {
+            serversCache.value?.firstOrNull { it.guid == guid }?.let {
                 repository.removeConfig(it)
             }
         }
@@ -123,19 +121,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val key = MmkvManager.encodeServerConfig("", config)
         serverRawStorage?.encode(key, server)
         serverList.add(0, key)
-        serversCache.add(0, ServersCache(key, config))
+//        serversCache.add(0, ServersCache(key, config))
     }
 
     fun swapServer(fromPosition: Int, toPosition: Int) {
         Collections.swap(serverList, fromPosition, toPosition)
-        Collections.swap(serversCache, fromPosition, toPosition)
+//        Collections.swap(serversCache, fromPosition, toPosition)
         mainStorage?.encode(KEY_ANG_CONFIGS, Gson().toJson(serverList))
     }
 
 
     fun testAllTcping() {
         viewModelScope.launch {
-            repository.testPing(serversCache)
+            repository.testPing(serversCache.value ?: emptyList())
         }
     }
 
@@ -146,7 +144,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         getApplication<AngApplication>().toast(R.string.connection_test_testing)
         // without Dispatchers.Default viewModelScope will launch in main thread
-        for (item in serversCache) {
+        for (item in serversCache.value!!) {
             val config = V2rayConfigUtil.getV2rayConfig(getApplication(), item.guid)
             if (config.status) {
                 MessageUtil.sendMsg2TestService(
@@ -218,7 +216,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getPosition(guid: String): Int {
-        serversCache.forEachIndexed { index, it ->
+        serversCache.value?.forEachIndexed { index, it ->
             if (it.guid == guid)
                 return index
         }
@@ -227,9 +225,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun removeDuplicateServer() {
         val deleteServer = mutableListOf<String>()
-        serversCache.forEachIndexed { index, it ->
+        serversCache.value?.forEachIndexed { index, it ->
             val outbound = it.config.getProxyOutbound()
-            serversCache.forEachIndexed { index2, it2 ->
+            serversCache.value?.forEachIndexed { index2, it2 ->
                 if (index2 > index) {
                     val outbound2 = it2.config.getProxyOutbound()
                     if (outbound == outbound2 && !deleteServer.contains(it2.guid)) {

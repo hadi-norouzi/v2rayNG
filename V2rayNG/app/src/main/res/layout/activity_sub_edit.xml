@@ -116,6 +116,31 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/interval_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/layout_margin_top_height"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sub_setting_auto_update_interval" />
+
+
+                <EditText
+                    android:id="@+id/update_interval"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="top"
+                    android:text="1440"
+                    android:inputType="number"
+                    android:maxLines="1" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
 

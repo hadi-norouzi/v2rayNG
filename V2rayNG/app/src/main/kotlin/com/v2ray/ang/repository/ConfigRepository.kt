@@ -8,6 +8,7 @@ import com.v2ray.ang.util.SpeedtestUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,21 +57,21 @@ class ConfigRepositoryImpl(
     override suspend fun testPing(servers: List<ServersCache>) {
         SpeedtestUtil.closeAllTcpSockets()
         MmkvManager.clearAllTestDelayResults()
-        var job: Job? = null
-        val updatedList = emptyList<ServersCache>()
-        for (c in servers) {
-            val outbound = c.config.getProxyOutbound() ?: continue
-            val serverAddress = outbound.getServerAddress()
-            val port = outbound.getServerPort()
-            if (serverAddress != null && port != null) {
-                job = tcpingTestScope.launch {
-                    val testResult = SpeedtestUtil.tcping(serverAddress, port)
-                    c.config.ping = testResult
-                }
-                job.join()
+        var job: Job?
+        val configs = privateConfigs.value.toMutableList()
+        for (c in configs.withIndex()) {
+            val outbound = c.value.config.getProxyOutbound() ?: continue
+            val serverAddress = outbound.getServerAddress() ?: continue
+            val port = outbound.getServerPort() ?: continue
+            job = tcpingTestScope.async {
+                val testResult = SpeedtestUtil.tcping(serverAddress, port)
+
             }
+            job.join()
         }
-        privateConfigs.value = servers
+        privateConfigs.value = configs
+//        privateConfigs.value = servers
+
     }
 
     override suspend fun realTest(server: List<ServersCache>) {
