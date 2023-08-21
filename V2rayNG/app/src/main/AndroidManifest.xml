@@ -44,7 +44,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <receiver
-            android:name=".IPWidget"
+            android:name=".widget.IPWidget"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

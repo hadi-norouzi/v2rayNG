@@ -1,9 +1,10 @@
-package com.v2ray.ang
+package com.v2ray.ang.widget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.widget.RemoteViews
+import com.v2ray.ang.R
 
 /**
  * Implementation of App Widget functionality.
