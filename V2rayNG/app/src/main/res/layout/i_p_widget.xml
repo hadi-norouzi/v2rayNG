@@ -1,26 +1,53 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Widget.V2rayNG.AppWidget.Container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/AppThemeDayNight.AppWidgetContainer">
 
-    <TextView
-        android:id="@+id/appwidget_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:contentDescription="@string/appwidget_text"
-        android:text="Public IP"
-        android:textSize="12sp"
-        android:textStyle="bold|italic" />
+    <LinearLayout
+        android:id="@+id/textContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/emoji_flag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="@string/appwidget_text"
+            android:text="🇺🇸"
+            android:textSize="12sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/appwidget_text"
+            android:text="Public IP"
+            android:textSize="12sp"
+            android:textStyle="bold|italic" />
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/appwidget_text"
-        app:layout_constraintStart_toStartOf="parent"
-        android:paddingTop="8dp"
-        android:text="1.1.1.1"/>
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_below="@id/textContainer">
+
+        <TextView
+            android:id="@+id/ip_widget"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="8dp"
+            android:text="1.1.1.1" />
+
+        <ProgressBar
+            android:id="@+id/loading_ip"
+            android:visibility="gone"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+</RelativeLayout>
