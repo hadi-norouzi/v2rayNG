@@ -94,6 +94,10 @@
     <string name="menu_item_export_proxy_app">Export to Clipboard</string>
     <string name="menu_item_import_proxy_app">Import from Clipboard</string>
 
+    <!-- BottomNavigation items   -->
+    <string name="home_item">Home</string>
+    <string name="subscriptions_item">Subscriptions</string>
+    <string name="settings_item">Settings</string>
 
     <!-- Preferences -->
     <string name="title_settings">Settings</string>

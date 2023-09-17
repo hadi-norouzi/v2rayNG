@@ -59,7 +59,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = JavaVersion.VERSION_17
     }
 
     splits {
@@ -88,7 +88,13 @@ android {
     buildFeatures {
         viewBinding true
         buildConfig true
+        compose true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.1"
+    }
+
     namespace 'com.v2ray.ang'
     testNamespace 'com.v2ray.angTest'
 }
@@ -96,6 +102,15 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.aar', '*.jar'], exclude: [])
     testImplementation 'junit:junit:4.13.2'
+
+    implementation platform("androidx.compose:compose-bom:2023.09.00")
+    implementation "androidx.compose.runtime:runtime"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+
+    def nav_version = "2.7.2"
+    implementation "androidx.navigation:navigation-compose:$nav_version"
+
 
     // Androidx
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -137,4 +152,5 @@ dependencies {
 
     implementation "androidx.work:work-runtime-ktx:$work_version"
     implementation "androidx.work:work-multiprocess:$work_version"
+
 }
