@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -30,7 +31,7 @@ fun SubscriptionItem(item: SubscriptionItem) {
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp).padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -45,6 +46,9 @@ fun SubscriptionItem(item: SubscriptionItem) {
                 }
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(Icons.Filled.Edit, contentDescription = "")
+                }
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "")
                 }
 
             }
