@@ -108,6 +108,10 @@ dependencies {
     implementation "androidx.compose.material3:material3"
     implementation "androidx.compose.ui:ui-tooling-preview"
 
+    def tvCompose = '1.0.0-alpha09'
+    implementation "androidx.tv:tv-foundation:$tvCompose"
+    implementation "androidx.tv:tv-material:$tvCompose"
+
     def nav_version = "2.7.2"
     implementation "androidx.navigation:navigation-compose:$nav_version"
 
