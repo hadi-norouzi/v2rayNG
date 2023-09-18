@@ -26,10 +26,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Surface
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.BuildConfig
@@ -48,32 +51,35 @@ import me.drakeet.support.toast.ToastCompat
 import java.io.File
 import java.io.FileOutputStream
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
 
     private val adapter by lazy { MainRecyclerAdapter(this) }
-    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
-    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
+//    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
+//    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
 //            startV2Ray()
         }
     }
-    private var mItemTouchHelper: ItemTouchHelper? = null
+//    private var mItemTouchHelper: ItemTouchHelper? = null
     val mainViewModel: MainViewModel by viewModels()
 
 
+    @OptIn(ExperimentalTvMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MainPage()
+            V2rayNGTheme {
+                MainPage()
+            }
         }
-        binding = ActivityMainBinding.inflate(layoutInflater)
+//        binding = ActivityMainBinding.inflate(layoutInflater)
 //        val view = binding.root
 //        setContentView(view)
-        title = getString(R.string.title_server)
-        setSupportActionBar(binding.toolbar)
+//        title = getString(R.string.title_server)
+//        setSupportActionBar(binding.toolbar)
 //        if (!Utils.getDarkModeStatus(this)) {
 //            WindowCompat.getInsetsController(window, window.decorView).apply {
 //                isAppearanceLightStatusBars = true
@@ -92,21 +98,21 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //            }
 //        }
 
-        binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+//        binding.recyclerView.setHasFixedSize(true)
+//        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+//        binding.recyclerView.adapter = adapter
+//
+//        val callback = SimpleItemTouchHelperCallback(adapter)
+//        mItemTouchHelper = ItemTouchHelper(callback)
+//        mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
 
-        val callback = SimpleItemTouchHelperCallback(adapter)
-        mItemTouchHelper = ItemTouchHelper(callback)
-        mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
 
-
-        val toggle = ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
-        binding.drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-        binding.navView.setNavigationItemSelectedListener(this)
-        binding.version.text = "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})"
+//        val toggle = ActionBarDrawerToggle(
+//                this, binding.drawerLayout, binding.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+//        binding.drawerLayout.addDrawerListener(toggle)
+//        toggle.syncState()
+//        binding.navView.setNavigationItemSelectedListener(this)
+//        binding.version.text = "v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})"
 
         setupViewModel()
         copyAssets()
@@ -123,13 +129,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     }
 
     private fun setupViewModel() {
-        mainViewModel.updateListAction.observe(this) { index ->
-            if (index >= 0) {
-                adapter.notifyItemChanged(index)
-            } else {
-                adapter.notifyDataSetChanged()
-            }
-        }
+//        mainViewModel.updateListAction.observe(this) { index ->
+//            if (index >= 0) {
+//                adapter.notifyItemChanged(index)
+//            } else {
+//                adapter.notifyDataSetChanged()
+//            }
+//        }
         mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
 //        mainViewModel.isRunning.observe(this) { isRunning ->
 //            adapter.isRunning = isRunning
@@ -612,19 +618,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //        }
 //    }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_BUTTON_B) {
-            moveTaskToBack(false)
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-
-    fun showCircle() {
-        binding.fabProgressCircle.show()
-    }
-
     fun hideCircle() {
         try {
             Observable.timer(300, TimeUnit.MILLISECONDS)
@@ -643,23 +636,23 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            //super.onBackPressed()
-            onBackPressedDispatcher.onBackPressed()
-        }
-    }
+//    @Deprecated("Deprecated in Java")
+//    override fun onBackPressed() {
+//        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+//            binding.drawerLayout.closeDrawer(GravityCompat.START)
+//        } else {
+//            //super.onBackPressed()
+//            onBackPressedDispatcher.onBackPressed()
+//        }
+//    }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
             //R.id.server_profile -> activityClass = MainActivity::class.java
-            R.id.sub_setting -> {
-                startActivity(Intent(this, SubSettingActivity::class.java))
-            }
+//            R.id.sub_setting -> {
+//                startActivity(Intent(this, SubSettingActivity::class.java))
+//            }
             R.id.settings -> {
 //                startActivity(Intent(this, SettingsActivity::class.java)
 //                        .putExtra("isRunning", mainViewModel.isRunning.value == true))

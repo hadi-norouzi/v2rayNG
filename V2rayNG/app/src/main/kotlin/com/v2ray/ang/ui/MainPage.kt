@@ -10,7 +10,6 @@ import androidx.compose.material.icons.outlined.AccountBox
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -20,6 +19,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -46,6 +49,50 @@ fun MainPage() {
     val navHostController: NavHostController = rememberNavController()
 
 
+    val navBackStackEntry by navHostController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination
+    Scaffold(
+        bottomBar = {
+            BottomBar(navHostController, currentRoute)
+        }
+    ) {
+
+        Box(modifier = Modifier.padding(it)) {
+            NavHost(navController = navHostController, startDestination = "home") {
+
+                composable("home") {
+                    ConfigsPage()
+                }
+
+                navigation(route = "subscription_route", startDestination = "subscriptions") {
+                    composable("subscriptions") {
+                        SubscriptionPage(
+                            navHostController
+                        )
+                    }
+                    composable("subscription/edit") {
+                        EditSubPage()
+                    }
+                }
+
+                navigation(startDestination = "settings", route = "setting") {
+                    composable("settings") {
+                        SettingsPage(
+                            navHostController
+                        )
+                    }
+                    composable("logcat") {
+                        LogcatPage()
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+@Composable
+fun BottomBar(navController: NavHostController, navDestination: NavDestination?) {
     val icons = listOf(
         BottomNavigationItem(
             title = stringResource(id = R.string.home_item),
@@ -66,69 +113,28 @@ fun MainPage() {
             route = "settings"
         )
     )
-    MaterialTheme {
-
-        val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-        Scaffold(
-            bottomBar = {
-                NavigationBar {
-                    icons.forEachIndexed { index, item ->
-                        NavigationBarItem(
-                            selected = currentRoute == item.route,
-                            onClick = {
-
-                                navHostController.navigate(item.route) {
-
-                                    navHostController.graph.startDestinationRoute?.let { screen_route ->
-                                        popUpTo(screen_route) {
-                                            saveState = true
-                                        }
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            label = {
-                                Text(item.title)
-                            },
-                            icon = {
-                                Icon(
-                                    imageVector = if (currentRoute == item.route) item.selectedIcon else item.unselectedIcon,
-                                    contentDescription = "",
-                                )
-                            },
-                        )
-
+    NavigationBar {
+        icons.forEach { item ->
+            NavigationBarItem(
+                selected = navDestination?.hierarchy?.any { it.route == item.route } == true,
+                onClick = {
+                    navController.navigate(item.route) {
+                        popUpTo(navController.graph.findStartDestination().id)
+                        launchSingleTop = true
                     }
-                }
-            }
-        ) {
+                },
+                label = {
+                    Text(item.title)
+                },
+                icon = {
+                    Icon(
+                        imageVector = if (navDestination?.hierarchy?.any { it.route == item.route } == true) item.selectedIcon else item.unselectedIcon,
+                        contentDescription = "",
+                    )
+                },
+            )
 
-            Box(modifier = Modifier.padding(it)) {
-                NavHost(navController = navHostController, startDestination = "home") {
-
-                    composable("home") {
-                        ConfigsPage()
-                    }
-                    composable("subscriptions") {
-                        SubscriptionPage(
-                            navHostController
-                        )
-                    }
-                    composable("settings") {
-                        SettingsPage(
-                            navHostController
-                        )
-                    }
-                    composable("subscription_edit") {
-                        EditSubPage()
-                    }
-                    composable("logcat") {
-                        LogcatPage()
-                    }
-                }
-            }
         }
     }
+
 }

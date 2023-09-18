@@ -25,7 +25,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.util.SpeedtestUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +69,7 @@ fun SettingsPage(navController: NavController) {
 
                 },
             )
+            Text("v${BuildConfig.VERSION_NAME} (${SpeedtestUtil.getLibVersion()})")
         }
     }
 }

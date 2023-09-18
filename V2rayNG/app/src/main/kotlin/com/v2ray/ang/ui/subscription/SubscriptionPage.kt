@@ -37,7 +37,7 @@ fun SubscriptionPage(navController: NavController) {
                 title = { Text(stringResource(id = R.string.title_sub_setting)) },
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate("subscription_edit")
+                        navController.navigate("subscription/edit")
                     }) {
                         Icon(Icons.Filled.Add, contentDescription = "")
                     }
