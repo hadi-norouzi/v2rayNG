@@ -25,8 +25,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.home.ConfigsPage
+import com.v2ray.ang.ui.logcat.LogcatPage
 import com.v2ray.ang.ui.settings.SettingsPage
 import com.v2ray.ang.ui.subscription.EditSubPage
 import com.v2ray.ang.ui.subscription.SubscriptionPage
@@ -115,10 +117,15 @@ fun MainPage() {
                         )
                     }
                     composable("settings") {
-                        SettingsPage()
+                        SettingsPage(
+                            navHostController
+                        )
                     }
                     composable("subscription_edit") {
                         EditSubPage()
+                    }
+                    composable("logcat") {
+                        LogcatPage()
                     }
                 }
             }

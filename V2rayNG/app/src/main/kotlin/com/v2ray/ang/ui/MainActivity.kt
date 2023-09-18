@@ -56,7 +56,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
-            startV2Ray()
+//            startV2Ray()
         }
     }
     private var mItemTouchHelper: ItemTouchHelper? = null
@@ -74,34 +74,23 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //        setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
-        if (!Utils.getDarkModeStatus(this)) {
-            WindowCompat.getInsetsController(window, window.decorView).apply {
-                isAppearanceLightStatusBars = true
-            }
-        }
+//        if (!Utils.getDarkModeStatus(this)) {
+//            WindowCompat.getInsetsController(window, window.decorView).apply {
+//                isAppearanceLightStatusBars = true
+//            }
+//        }
 
-        binding.fab.setOnClickListener {
-            if (mainViewModel.isRunning.value == true) {
-                Utils.stopVService(this)
-            } else if (settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN" == "VPN") {
-                val intent = VpnService.prepare(this)
-                if (intent == null) {
-                    startV2Ray()
-                } else {
-                    requestVpnPermission.launch(intent)
-                }
-            } else {
-                startV2Ray()
-            }
-        }
-        binding.layoutTest.setOnClickListener {
-            if (mainViewModel.isRunning.value == true) {
-                setTestState(getString(R.string.connection_test_testing))
-                mainViewModel.testCurrentServerRealPing()
-            } else {
-//                tv_test_state.text = getString(R.string.connection_test_fail)
-            }
-        }
+//        binding.fab.setOnClickListener {
+
+//        }
+//        binding.layoutTest.setOnClickListener {
+//            if (mainViewModel.isRunning.value == true) {
+//                setTestState(getString(R.string.connection_test_testing))
+//                mainViewModel.testCurrentServerRealPing()
+//            } else {
+////                tv_test_state.text = getString(R.string.connection_test_fail)
+//            }
+//        }
 
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
@@ -142,26 +131,25 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
         mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
-        mainViewModel.isRunning.observe(this) { isRunning ->
-            adapter.isRunning = isRunning
-            if (isRunning) {
-                if (!Utils.getDarkModeStatus(this)) {
-                    binding.fab.setImageResource(R.drawable.ic_stat_name)
-                }
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
-                setTestState(getString(R.string.connection_connected))
-                binding.layoutTest.isFocusable = true
-            } else {
-                if (!Utils.getDarkModeStatus(this)) {
-                    binding.fab.setImageResource(R.drawable.ic_stat_name)
-                }
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
-                setTestState(getString(R.string.connection_not_connected))
-                binding.layoutTest.isFocusable = false
-            }
-            hideCircle()
-        }
-        mainViewModel.startListenBroadcast()
+//        mainViewModel.isRunning.observe(this) { isRunning ->
+//            adapter.isRunning = isRunning
+//            if (isRunning) {
+//                if (!Utils.getDarkModeStatus(this)) {
+//                    binding.fab.setImageResource(R.drawable.ic_stat_name)
+//                }
+//                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_orange))
+//                setTestState(getString(R.string.connection_connected))
+//                binding.layoutTest.isFocusable = true
+//            } else {
+//                if (!Utils.getDarkModeStatus(this)) {
+//                    binding.fab.setImageResource(R.drawable.ic_stat_name)
+//                }
+//                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_grey))
+//                setTestState(getString(R.string.connection_not_connected))
+//                binding.layoutTest.isFocusable = false
+//            }
+//            hideCircle()
+//        }
     }
 
     private fun copyAssets() {
@@ -203,24 +191,16 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
     }
 
-    fun startV2Ray() {
-        if (mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER).isNullOrEmpty()) {
-            return
-        }
-        showCircle()
-//        toast(R.string.toast_services_start)
-        V2RayServiceManager.startV2Ray(this)
-        hideCircle()
-    }
+
 
     fun restartV2Ray() {
-        if (mainViewModel.isRunning.value == true) {
-            Utils.stopVService(this)
-        }
+//        if (mainViewModel.isRunning.value == true) {
+//            Utils.stopVService(this)
+//        }
         Observable.timer(500, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
-                    startV2Ray()
+//                    startV2Ray()
                 }
     }
 
@@ -681,8 +661,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 startActivity(Intent(this, SubSettingActivity::class.java))
             }
             R.id.settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java)
-                        .putExtra("isRunning", mainViewModel.isRunning.value == true))
+//                startActivity(Intent(this, SettingsActivity::class.java)
+//                        .putExtra("isRunning", mainViewModel.isRunning.value == true))
             }
             R.id.user_asset_setting -> {
                 startActivity(Intent(this, UserAssetActivity::class.java))

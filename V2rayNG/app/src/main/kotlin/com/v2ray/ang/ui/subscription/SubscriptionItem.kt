@@ -31,7 +31,7 @@ fun SubscriptionItem(item: SubscriptionItem) {
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(start = 16.dp, end = 8.dp).padding(vertical = 16.dp:)
+            modifier = Modifier.padding(start = 16.dp, end = 8.dp).padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier.weight(1f)

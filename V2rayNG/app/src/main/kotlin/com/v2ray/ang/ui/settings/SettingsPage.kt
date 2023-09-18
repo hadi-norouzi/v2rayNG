@@ -24,11 +24,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.v2ray.ang.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPage() {
+fun SettingsPage(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -40,25 +41,6 @@ fun SettingsPage() {
     ) {
 
         Column(modifier = Modifier.padding(it)) {
-
-//            SettingItem(
-//                icon = R.drawable.ic_wallet,
-//                onClick = {
-//
-//                    navController.navigate("/wallets")
-//                },
-//            ) {
-//                Column {
-//                    Text("Wallets")
-//                    Text("Wallet 1", style = MaterialTheme.typography.bodySmall)
-//                }
-//            }
-//            SettingItem(
-//                icon = R.drawable.qr_code, text = "Scan QR code",
-//                onClick = {
-//
-//                },
-//            )
             SettingItem(
                 text = stringResource(id = R.string.title_user_asset_setting),
                 onClick = {
@@ -76,6 +58,7 @@ fun SettingsPage() {
                 text = stringResource(id = R.string.title_logcat),
                 onClick = {
 
+                    navController.navigate("logcat")
                 },
             )
             SettingItem(
