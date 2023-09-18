@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -15,6 +16,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -32,6 +34,12 @@ import com.v2ray.ang.R
 fun ConfigsPage() {
 
     val viewModel: ConfigsViewModel = viewModel()
+
+    val running = viewModel.running.collectAsState()
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.startListenBroadcast()
+    }
 
     Scaffold(
         topBar = {
@@ -62,8 +70,17 @@ fun ConfigsPage() {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { /*TODO*/ }) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = "start")
+            FloatingActionButton(onClick = {
+                if (running.value) {
+
+                } else {
+                    viewModel.startVpn()
+                }
+            }) {
+                Icon(
+                    if (!running.value) Icons.Filled.PlayArrow else Icons.Filled.Clear,
+                    contentDescription = "start"
+                )
             }
         }
     ) {
@@ -88,16 +105,17 @@ fun ConfigsPage() {
                 tabs.value.forEachIndexed { index, item ->
                     Tab(
                         modifier = Modifier.height(54.dp),
-                        selected = tabIndex - 1  == index,
+                        selected = tabIndex - 1 == index,
                         onClick = { tabIndex = index + 1 },
                     ) {
                         Text(item.second.remarks)
                     }
                 }
             }
-            ConfigList(
-                configs = configs.value[tabIndex]
-            )
+            if (configs.value.isNotEmpty())
+                ConfigList(
+                    configs = configs.value[tabIndex]
+                )
         }
 
     }
