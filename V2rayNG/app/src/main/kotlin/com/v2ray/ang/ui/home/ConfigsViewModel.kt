@@ -19,6 +19,7 @@ import com.v2ray.ang.dto.ServersCache
 import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.service.V2RayServiceManager
+import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.SpeedtestUtil
@@ -29,10 +30,13 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import rx.Observable
+import rx.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
-class ConfigsViewModel @Inject constructor (application: Application) : AndroidViewModel(application) {
+class ConfigsViewModel @Inject constructor(application: Application) : AndroidViewModel(application) {
 
     private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
@@ -55,13 +59,25 @@ class ConfigsViewModel @Inject constructor (application: Application) : AndroidV
 
     init {
 
-        getSubs()
+//        getSubs()
         getConfigs()
     }
 
     private fun getSubs() {
         val subs = MmkvManager.decodeSubscriptions()
-        _subscriptions.value = subs
+        _subscriptions.update { subs }
+    }
+
+    fun addConfig(text: String) {
+        val count = AngConfigManager.importBatchConfig(text, "", true)
+        if (count > 0) {
+            getConfigs()
+        }
+    }
+
+    fun deleteConfig(config: ServerConfig) {
+
+//        MmkvManager.removeServer(guid)
     }
 
     private fun getConfigs() {
@@ -88,8 +104,22 @@ class ConfigsViewModel @Inject constructor (application: Application) : AndroidV
 
     fun startListenBroadcast() {
         _isRunning.value = false
-        getApplication<AngApplication>().registerReceiver(mMsgReceiver, IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY))
+        getApplication<AngApplication>().registerReceiver(
+            mMsgReceiver,
+            IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY)
+        )
         MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_REGISTER_CLIENT, "")
+    }
+
+    fun restartV2Ray() {
+        if (_isRunning.value) {
+            Utils.stopVService(getApplication())
+        }
+        Observable.timer(500, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                startV2Ray()
+            }
     }
 
     fun startVpn() {
@@ -132,23 +162,29 @@ class ConfigsViewModel @Inject constructor (application: Application) : AndroidV
                 AppConfig.MSG_STATE_RUNNING -> {
                     _isRunning.value = true
                 }
+
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
                     _isRunning.value = false
                 }
+
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     getApplication<AngApplication>().toast(R.string.toast_services_success)
                     _isRunning.value = true
                 }
+
                 AppConfig.MSG_STATE_START_FAILURE -> {
                     getApplication<AngApplication>().toast(R.string.toast_services_failure)
                     _isRunning.value = false
                 }
+
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
                     _isRunning.value = false
                 }
+
                 AppConfig.MSG_MEASURE_DELAY_SUCCESS -> {
 //                    updateTestResultAction.value = intent.getStringExtra("content")
                 }
+
                 AppConfig.MSG_MEASURE_CONFIG_SUCCESS -> {
                     val resultPair = intent.getSerializableExtra("content") as Pair<String, Long>
                     MmkvManager.encodeServerTestDelayMillis(resultPair.first, resultPair.second)

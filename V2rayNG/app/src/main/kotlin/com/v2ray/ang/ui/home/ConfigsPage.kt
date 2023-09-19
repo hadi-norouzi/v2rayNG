@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.home
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,17 +35,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.v2ray.ang.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConfigsPage() {
+fun ConfigsPage(navController: NavController) {
 
     val viewModel: ConfigsViewModel = hiltViewModel()
 
@@ -54,29 +58,32 @@ fun ConfigsPage() {
 //        viewModel.startListenBroadcast()
 //    }
 
+    val clipboardManager = LocalClipboardManager.current
+
+//    val launch = rememberLauncherForActivityResult(contract = , onResult = )
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.title_filter_config)) },
                 actions = {
-                    AddDropDown()
-                    MoreDropDown()
+                    AddDropDown(
+                        onImportFromClipboard = {
+                            clipboardManager.getText()?.text?.let {
+                                viewModel.addConfig(it)
+                            }
+                        },
+                        onImportFromQr = {
+
+                        }
+                    )
+                    MoreDropDown(
+                        onRestartService = viewModel::restartV2Ray
+                    )
                 },
             )
         },
         floatingActionButton = {
-//            FloatingActionButton(onClick = {
-//                if (running.value) {
-//
-//                } else {
-//                    viewModel.startVpn()
-//                }
-//            }) {
-//                Icon(
-//                    if (!running.value) Icons.Filled.PlayArrow else Icons.Filled.Clear,
-//                    contentDescription = "start"
-//                )
-//            }
             Column {
                 ExtendedFloatingActionButton(onClick = { /*TODO*/ }) {
                     Icon(
@@ -85,7 +92,6 @@ fun ConfigsPage() {
                     )
                     Text("200 ping")
                 }
-                Text("200 ping")
             }
         }
     ) {
@@ -118,8 +124,16 @@ fun ConfigsPage() {
 //                }
 //            }
             if (configs.value.isNotEmpty())
+
                 ConfigList(
-                    configs = configs.value
+                    configs = configs.value,
+                    onEditClicked = {
+
+                        navController.navigate("configs/edit")
+                    },
+                    onDeleteClicked = { config ->
+                        viewModel.deleteConfig(config)
+                    },
                 )
         }
 
@@ -127,7 +141,9 @@ fun ConfigsPage() {
 }
 
 @Composable
-fun MoreDropDown() {
+fun MoreDropDown(
+    onRestartService: () -> Unit
+) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
 
@@ -148,7 +164,7 @@ fun MoreDropDown() {
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.title_service_restart)) },
-                onClick = { Toast.makeText(context, "Load", Toast.LENGTH_SHORT).show() }
+                onClick = onRestartService
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.title_del_all_config)) },
@@ -176,7 +192,10 @@ fun MoreDropDown() {
 
 
 @Composable
-fun AddDropDown() {
+fun AddDropDown(
+    onImportFromClipboard: () -> Unit,
+    onImportFromQr: () -> Unit,
+) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
 
@@ -197,11 +216,11 @@ fun AddDropDown() {
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_qrcode)) },
-                onClick = { Toast.makeText(context, "Load", Toast.LENGTH_SHORT).show() }
+                onClick = { Toast.makeText(context, "Load", Toast.LENGTH_SHORT).show() },
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_clipboard)) },
-                onClick = { Toast.makeText(context, "Save", Toast.LENGTH_SHORT).show() }
+                onClick = onImportFromClipboard,
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_manually_vmess)) },

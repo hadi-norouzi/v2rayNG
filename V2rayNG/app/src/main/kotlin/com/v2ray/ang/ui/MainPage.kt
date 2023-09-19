@@ -33,6 +33,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.v2ray.ang.R
 import com.v2ray.ang.ui.home.ConfigsPage
+import com.v2ray.ang.ui.home.EditConfigPage
 import com.v2ray.ang.ui.logcat.LogcatPage
 import com.v2ray.ang.ui.settings.SettingsPage
 import com.v2ray.ang.ui.subscription.EditSubPage
@@ -62,8 +63,13 @@ fun MainPage() {
         Box(modifier = Modifier.padding(it)) {
             NavHost(navController = navHostController, startDestination = "home") {
 
-                composable("home") {
-                    ConfigsPage()
+                navigation(route = "home", startDestination = "configs") {
+                    composable("configs") {
+                        ConfigsPage(navHostController)
+                    }
+                    composable("configs/edit") {
+                        EditConfigPage()
+                    }
                 }
 
                 navigation(route = "subscription_route", startDestination = "subscriptions") {

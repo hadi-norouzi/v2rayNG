@@ -20,20 +20,37 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.dto.ServerConfig
+import com.v2ray.ang.util.AngConfigManager
 
 @Composable
-fun ConfigList(configs: List<ServerConfig>) {
+fun ConfigList(
+    configs: List<ServerConfig>,
+    onEditClicked: (ServerConfig) -> Unit,
+    onDeleteClicked: (ServerConfig) -> Unit,
+) {
 
+    val clipboardManager: ClipboardManager = LocalClipboardManager.current
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(8.dp),
         userScrollEnabled = true
     ) {
 
-        items(configs + configs + configs + configs) {
-            ConfigItem(item = it)
+        items(configs) {
+            ConfigItem(
+                item = it,
+                onDelete = { onDeleteClicked(it) },
+                onEdit = { onEditClicked(it) },
+                onShare = {
+                    val config = AngConfigManager.shareConfig(it)
+                    clipboardManager.setText(AnnotatedString(config))
+                },
+            )
         }
         item {
             Spacer(modifier = Modifier.height(100.dp))

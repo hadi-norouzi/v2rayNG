@@ -12,6 +12,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -48,7 +49,9 @@ fun V2rayNGTheme(
             window?.statusBarColor =
                 colorScheme.surface.toArgb() // surface becomes the the status bar color
             window?.navigationBarColor =
-                colorScheme.surface.toArgb()
+                colorScheme.primary.copy(alpha = 0.08f).compositeOver(colorScheme.surface.copy()).toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars =
+                !darkTheme
 
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                 !darkTheme // not darkTheme makes the status bar icons visible

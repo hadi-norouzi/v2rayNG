@@ -20,11 +20,12 @@ import com.v2ray.ang.dto.ServerConfig
 
 @Composable
 fun ConfigItem(
-    item: ServerConfig
+    item: ServerConfig,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit,
+    onShare: () -> Unit,
 ) {
     Card(
-
-
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -38,13 +39,13 @@ fun ConfigItem(
                 Text("${item.outboundBean?.getServerAddress()} : ${item.outboundBean?.getServerPort()}")
             }
             Row {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = onShare) {
                     Icon(Icons.Outlined.Share, contentDescription = "")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = onEdit) {
                     Icon(Icons.Outlined.Edit, contentDescription = "")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = onDelete) {
                     Icon(Icons.Outlined.Delete, contentDescription = "")
                 }
             }

@@ -199,19 +199,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-
-
-    fun restartV2Ray() {
-//        if (mainViewModel.isRunning.value == true) {
-//            Utils.stopVService(this)
-//        }
-        Observable.timer(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-//                    startV2Ray()
-                }
-    }
-
     public override fun onResume() {
         super.onResume()
         mainViewModel.reloadServerList()
@@ -298,11 +285,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         R.id.real_ping_all -> {
             mainViewModel.testAllRealPing()
-            true
-        }
-
-        R.id.service_restart -> {
-            restartV2Ray()
             true
         }
 
