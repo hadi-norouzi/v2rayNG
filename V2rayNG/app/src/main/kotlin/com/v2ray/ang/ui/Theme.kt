@@ -47,8 +47,8 @@ fun V2rayNGTheme(
             val window = (view.context as Activity).window
             window?.statusBarColor =
                 colorScheme.surface.toArgb() // surface becomes the the status bar color
-//            window?.navigationBarColor =
-//                colorScheme.inverseSurface.toArgb()
+            window?.navigationBarColor =
+                colorScheme.surface.toArgb()
 
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                 !darkTheme // not darkTheme makes the status bar icons visible

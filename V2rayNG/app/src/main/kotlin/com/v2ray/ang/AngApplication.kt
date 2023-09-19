@@ -5,7 +5,9 @@ import androidx.multidex.MultiDexApplication
 import androidx.preference.PreferenceManager
 import androidx.work.Configuration
 import com.tencent.mmkv.MMKV
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class AngApplication : MultiDexApplication(), Configuration.Provider {
     companion object {
         const val PREF_LAST_VERSION = "pref_last_version"

@@ -89,9 +89,9 @@ class LogcatActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLogcatBinding.inflate(layoutInflater)
-        binding.logcatPage.setContent {
-            LogcatPage()
-        }
+//        binding.logcatPage.setContent {
+//            LogcatPage()
+//        }
 //        logcat(false)
     }
 

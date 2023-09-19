@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.v2ray.ang.R
 
@@ -45,7 +46,7 @@ import com.v2ray.ang.R
 @Composable
 fun ConfigsPage() {
 
-    val viewModel: ConfigsViewModel = viewModel()
+    val viewModel: ConfigsViewModel = hiltViewModel()
 
     val running = viewModel.running.collectAsState()
 
@@ -58,7 +59,6 @@ fun ConfigsPage() {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.title_filter_config)) },
                 actions = {
-
                     AddDropDown()
                     MoreDropDown()
                 },
@@ -119,7 +119,7 @@ fun ConfigsPage() {
 //            }
             if (configs.value.isNotEmpty())
                 ConfigList(
-                    configs = configs.value.first()
+                    configs = configs.value
                 )
         }
 

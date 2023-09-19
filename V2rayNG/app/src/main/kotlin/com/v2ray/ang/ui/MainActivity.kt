@@ -46,15 +46,17 @@ import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
 import com.v2ray.ang.service.V2RayServiceManager
 import com.v2ray.ang.util.*
 import com.v2ray.ang.viewmodel.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import me.drakeet.support.toast.ToastCompat
 import java.io.File
 import java.io.FileOutputStream
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
 
-    private val adapter by lazy { MainRecyclerAdapter(this) }
+//    private val adapter by lazy { MainRecyclerAdapter(this) }
 //    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
 //    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {

@@ -1,7 +1,9 @@
 package com.v2ray.ang.ui.subscription
 
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,10 +16,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.v2ray.ang.R
@@ -26,9 +32,10 @@ import com.v2ray.ang.R
 @Composable
 fun SubscriptionPage(navController: NavController) {
 
-    val viewModel: SubscriptionViewModel = viewModel()
+    val viewModel: SubscriptionViewModel = hiltViewModel()
 
     val items = viewModel.subscriptions.collectAsState()
+
 
 
     Scaffold(
@@ -37,7 +44,7 @@ fun SubscriptionPage(navController: NavController) {
                 title = { Text(stringResource(id = R.string.title_sub_setting)) },
                 actions = {
                     IconButton(onClick = {
-                        navController.navigate("subscription/edit")
+                        navController.navigate("subscription/add")
                     }) {
                         Icon(Icons.Filled.Add, contentDescription = "")
                     }
@@ -46,15 +53,45 @@ fun SubscriptionPage(navController: NavController) {
         },
     ) {
         Box(
-            modifier = Modifier.padding(it)
+            modifier = Modifier
+                .padding(it)
+                .fillMaxSize()
         ) {
+            val context = LocalContext.current
+            if (items.value.isEmpty()) {
 
-            LazyColumn(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(items.value) { sub ->
-                    SubscriptionItem(item = sub.second)
+                Text(
+                    "Empty subscriptions",
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxSize(),
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(items.value) { sub ->
+                        SubscriptionItem(
+                            item = sub.second,
+                            onEditTap = {
+                                navController.navigate("subscription/edit/${sub.first}")
+                            },
+                            onReloadTap = {
+                                viewModel.updateSubscription(sub.first)
+                            },
+                            onShareClicked = {
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, sub.second.url)
+                                    putExtra(Intent.EXTRA_SUBJECT, sub.second.remarks)
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, "Share With")
+                                context.startActivity(shareIntent)
+                            }
+                        )
+                    }
                 }
             }
 

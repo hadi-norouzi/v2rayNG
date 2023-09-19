@@ -23,13 +23,16 @@ import com.v2ray.ang.util.MessageUtil
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.SpeedtestUtil
 import com.v2ray.ang.util.Utils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
 
-class ConfigsViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ConfigsViewModel @Inject constructor (application: Application) : AndroidViewModel(application) {
 
     private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
@@ -41,7 +44,7 @@ class ConfigsViewModel(application: Application) : AndroidViewModel(application)
     val subscriptions = _subscriptions.asStateFlow()
 
 
-    private val _configs: MutableStateFlow<MutableList<MutableList<ServerConfig>>> =
+    private val _configs: MutableStateFlow<MutableList<ServerConfig>> =
         MutableStateFlow(value = mutableListOf())
 
     val configs = _configs.asStateFlow()
@@ -63,15 +66,21 @@ class ConfigsViewModel(application: Application) : AndroidViewModel(application)
 
     private fun getConfigs() {
         val serverList = MmkvManager.decodeServerList()
-        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
-        for ((index, guid) in serverList.withIndex()) {
+        val list = mutableListOf<ServerConfig>()
+//        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
+//        for ((index, guid) in serverList.withIndex()) {
+//            val config = MmkvManager.decodeServerConfig(guid) ?: continue
+//            if (config.subscriptionId.isEmpty()) {
+//                list[0].add(config)
+//            } else {
+//
+//
+//
+//            }
+//        }
+        for (guid in serverList) {
             val config = MmkvManager.decodeServerConfig(guid) ?: continue
-            if (config.subscriptionId.isEmpty()) {
-                list[0].add(config)
-            } else {
-
-
-            }
+            list.add(config)
         }
         _configs.update { list }
         print("configs ${_configs.value}")

@@ -24,14 +24,21 @@ import androidx.compose.ui.unit.dp
 import com.v2ray.ang.dto.SubscriptionItem
 
 @Composable
-fun SubscriptionItem(item: SubscriptionItem) {
+fun SubscriptionItem(
+    item: SubscriptionItem,
+    onEditTap: (SubscriptionItem) -> Unit,
+    onReloadTap: (SubscriptionItem) -> Unit,
+    onShareClicked: (SubscriptionItem) -> Unit,
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(start = 16.dp, end = 8.dp).padding(vertical = 16.dp)
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .padding(vertical = 16.dp)
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -41,13 +48,13 @@ fun SubscriptionItem(item: SubscriptionItem) {
                 Text(item.url, maxLines = 1)
             }
             Row {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { onShareClicked(item) }) {
                     Icon(Icons.Filled.Share, contentDescription = "")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { onEditTap(item) }) {
                     Icon(Icons.Filled.Edit, contentDescription = "")
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = { onReloadTap(item) }) {
                     Icon(Icons.Filled.Refresh, contentDescription = "")
                 }
 

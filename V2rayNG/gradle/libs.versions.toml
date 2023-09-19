@@ -1,0 +1,11 @@
+[versions]
+work-runtime-ktx = "2.8.1"
+
+[libraries]
+work-multiprocess = { module = "androidx.work:work-multiprocess", version.ref = "work-runtime-ktx" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime-ktx" }
+
+[plugins]
+
+[bundles]
+
