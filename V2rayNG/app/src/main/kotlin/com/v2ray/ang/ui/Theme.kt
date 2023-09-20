@@ -19,17 +19,27 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 
-val lightColorScheme = lightColorScheme()
+val lightColorScheme = lightColorScheme(
+    primary = Color(0xFFFFFFFF),
+    onPrimary = Color(0xFF000000),
+    secondary = Color(0xFFBDBDBD),
+
+    background = Color(0xFFFFFFFF),
+)
 
 val darkColorScheme = darkColorScheme(
     primary = Color(0xFF222222),
     onPrimary = Color(0xFFFFFFFF),
+    secondary = Color(0xFF727272),
+
+    background = Color(0xFF000000),
+
 )
 
 @Composable
 fun V2rayNGTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicTheming: Boolean = true,
+    dynamicTheming: Boolean = false,
     content: @Composable () -> Unit,
 ) {
 

@@ -35,7 +35,10 @@ import com.v2ray.ang.R
 import com.v2ray.ang.ui.home.ConfigsPage
 import com.v2ray.ang.ui.home.EditConfigPage
 import com.v2ray.ang.ui.logcat.LogcatPage
+import com.v2ray.ang.ui.settings.AdvancedSettings
+import com.v2ray.ang.ui.settings.RoutingSettings
 import com.v2ray.ang.ui.settings.SettingsPage
+import com.v2ray.ang.ui.settings.VpnSettings
 import com.v2ray.ang.ui.subscription.EditSubPage
 import com.v2ray.ang.ui.subscription.SubscriptionPage
 
@@ -97,6 +100,15 @@ fun MainPage() {
                     }
                     composable("logcat") {
                         LogcatPage()
+                    }
+                    composable("settings/vpn") {
+                        VpnSettings()
+                    }
+                    composable("settings/routing") {
+                        RoutingSettings()
+                    }
+                    composable("settings/advanced") {
+                        AdvancedSettings()
                     }
                 }
             }

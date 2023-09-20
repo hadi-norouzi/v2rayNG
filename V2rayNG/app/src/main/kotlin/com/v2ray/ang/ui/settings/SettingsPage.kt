@@ -59,7 +59,6 @@ fun SettingsPage(navController: NavController) {
             SettingItem(
                 text = stringResource(id = R.string.title_logcat),
                 onClick = {
-
                     navController.navigate("logcat")
                 },
             )
