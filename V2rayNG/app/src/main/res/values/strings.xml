@@ -23,8 +23,8 @@
     <string name="menu_item_add_config">Add config</string>
     <string name="menu_item_save_config">Save config</string>
     <string name="menu_item_del_config">Delete config</string>
-    <string name="menu_item_import_config_qrcode">Import config from QRcode</string>
-    <string name="menu_item_import_config_clipboard">Import config from Clipboard</string>
+    <string name="menu_item_import_config_qrcode">Scan Qr code</string>
+    <string name="menu_item_import_config_clipboard">Import from Clipboard</string>
     <string name="menu_item_import_config_manually_vmess">Type manually[Vmess]</string>
     <string name="menu_item_import_config_manually_vless">Type manually[VLESS]</string>
     <string name="menu_item_import_config_manually_ss">Type manually[Shadowsocks]</string>
@@ -185,7 +185,7 @@
     <string name="title_export_all">Export non-custom configs to clipboard</string>
     <string name="title_sub_setting">Subscription group setting</string>
     <string name="sub_setting_remarks">remarks</string>
-    <string name="sub_setting_url">Optional URL</string>
+    <string name="sub_setting_url">URL</string>
     <string name="sub_setting_enable">enable update</string>
     <string name="sub_auto_update">Auto update</string>
     <string name="title_sub_update">Update subscription</string>

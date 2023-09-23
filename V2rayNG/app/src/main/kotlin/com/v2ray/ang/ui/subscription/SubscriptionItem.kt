@@ -17,11 +17,14 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.v2ray.ang.dto.SubState
 import com.v2ray.ang.dto.SubscriptionItem
 
 @Composable
@@ -61,5 +64,18 @@ fun SubscriptionItem(
 
             }
         }
+        if (item.state == SubState.Loading)
+            LinearProgressIndicator(
+                progress = 1f,
+                modifier = Modifier.fillMaxWidth()
+            )
     }
+}
+
+@Preview
+@Composable
+fun SubscriptionItemPreview() {
+    SubscriptionItem(
+        item = SubscriptionItem(remarks = "Sub", state = SubState.Loading), onEditTap = {}, onReloadTap = {}, onShareClicked = {},
+    )
 }

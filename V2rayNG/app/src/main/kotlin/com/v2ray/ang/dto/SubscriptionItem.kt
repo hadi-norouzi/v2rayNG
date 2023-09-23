@@ -8,4 +8,13 @@ data class SubscriptionItem(
     var lastUpdated: Long = -1,
     var autoUpdate: Boolean = false,
     val updateInterval: Int? = null,
+    val state: SubState = SubState.Init,
 )
+
+
+enum class SubState {
+    Init,
+    Loading,
+    Success,
+    Failed,
+}

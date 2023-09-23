@@ -69,6 +69,10 @@ fun MainPage() {
         Box(modifier = Modifier.padding(it)) {
             NavHost(navController = navHostController, startDestination = "home") {
 
+                composable("scan_qr") {
+                    ScanQrPage()
+                }
+
                 navigation(route = "home", startDestination = "configs") {
                     composable("configs") {
                         ConfigsPage(navHostController)

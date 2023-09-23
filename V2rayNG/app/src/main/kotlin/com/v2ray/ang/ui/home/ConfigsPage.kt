@@ -84,7 +84,7 @@ fun ConfigsPage(navController: NavController) {
                             }
                         },
                         onImportFromQr = {
-
+                            navController.navigate("scan_qr")
                         },
                         onManuallyClicked = {
                             context.startActivity(
@@ -262,7 +262,7 @@ fun AddDropDown(
         ) {
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_qrcode)) },
-                onClick = { Toast.makeText(context, "Load", Toast.LENGTH_SHORT).show() },
+                onClick = onImportFromQr,
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_clipboard)) },

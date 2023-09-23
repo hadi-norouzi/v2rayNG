@@ -15,6 +15,7 @@ import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 class SubscriptionViewModel : ViewModel() {
@@ -39,6 +40,13 @@ class SubscriptionViewModel : ViewModel() {
 
     fun reloadSubs() {
         getSubs()
+    }
+
+    private fun setLoadingState(item: SubscriptionItem) {
+        val sub = _subscriptions.value.find { it.second == item } ?: return
+
+
+
     }
 
 
