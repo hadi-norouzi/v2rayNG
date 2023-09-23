@@ -11,4 +11,7 @@ interface AppsDatasource {
     suspend fun enabledApps()
 
 
+    suspend fun storeApps(list: List<AppInfo>)
+
+
 }

@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,6 +34,21 @@ class PerAppProxyViewModel @Inject constructor(
             println("supported Apps ${it.size}")
 
             apps.value = it
+        }
+    }
+
+    fun updateAppSelection(item: AppInfo) {
+
+        val list = apps.value.toMutableList()
+
+        var selected = list.find { it == item } ?: return
+
+        selected.isSelected = 1
+
+
+
+        viewModelScope.launch {
+            datasource.storeApps(list)
         }
     }
 }
