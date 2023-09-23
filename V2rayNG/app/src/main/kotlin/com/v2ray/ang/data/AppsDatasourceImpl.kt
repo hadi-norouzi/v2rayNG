@@ -1,4 +1,4 @@
-package com.v2ray.ang.util
+package com.v2ray.ang.data
 
 import android.Manifest
 import android.content.Context
@@ -6,12 +6,15 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import com.v2ray.ang.dto.AppInfo
-import rx.Observable
-import java.util.*
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.util.ArrayList
+import javax.inject.Inject
 
-object AppManagerUtil {
-    fun loadNetworkAppList(ctx: Context): ArrayList<AppInfo> {
-        val packageManager = ctx.packageManager
+class AppsDatasourceImpl @Inject constructor(val packageManager: PackageManager) : AppsDatasource {
+    override fun supportedApps(): Flow<List<AppInfo>> = flow {
+
         val packages = packageManager.getInstalledPackages(PackageManager.GET_PERMISSIONS)
         val apps = ArrayList<AppInfo>()
 
@@ -28,12 +31,13 @@ object AppManagerUtil {
             apps.add(appInfo)
         }
 
-        return apps
+        emit(apps)
     }
 
-    fun rxLoadNetworkAppList(ctx: Context): Observable<ArrayList<AppInfo>> = Observable.unsafeCreate {
-        it.onNext(loadNetworkAppList(ctx))
+    override suspend fun enabledApps() {
+        TODO("Not yet implemented")
     }
+
 
     private val PackageInfo.hasInternetPermission: Boolean
         get() {

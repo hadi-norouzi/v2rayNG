@@ -1,6 +1,8 @@
 package com.v2ray.ang.ui.subscription
 
 import android.content.Intent
+import android.text.TextUtils
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -36,21 +39,30 @@ fun SubscriptionPage(navController: NavController) {
 
     val items = viewModel.subscriptions.collectAsState()
 
+    val update = viewModel.subscriptionUpdate.collectAsState()
+
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = update.value) {
+
+        Toast.makeText(context, update.value ?: "", Toast.LENGTH_SHORT).show()
+    }
+
 
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.title_sub_setting)) },
-                actions = {
-                    IconButton(onClick = {
-                        navController.navigate("subscription/add")
-                    }) {
-                        Icon(Icons.Filled.Add, contentDescription = "")
-                    }
-                },
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navController.navigate("subscription/add")
+            }) {
+                Icon(Icons.Filled.Add, contentDescription = "")
+            }
+        }
     ) {
         Box(
             modifier = Modifier
@@ -81,12 +93,17 @@ fun SubscriptionPage(navController: NavController) {
                                 viewModel.updateSubscription(sub.first)
                             },
                             onShareClicked = {
+                                if (TextUtils.isEmpty(sub.second.url)) {
+                                    // TODO: disable share button
+                                }
                                 val sendIntent: Intent = Intent().apply {
                                     action = Intent.ACTION_SEND
                                     putExtra(Intent.EXTRA_TEXT, sub.second.url)
                                     putExtra(Intent.EXTRA_SUBJECT, sub.second.remarks)
                                     type = "text/plain"
                                 }
+
+                                // TODO: show qrcode or copy to clipboard dialog
                                 val shareIntent = Intent.createChooser(sendIntent, "Share With")
                                 context.startActivity(shareIntent)
                             }

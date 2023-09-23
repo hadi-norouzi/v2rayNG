@@ -1,13 +1,20 @@
 package com.v2ray.ang.ui.home
 
+import android.content.Intent
+import android.net.VpnService
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -45,6 +52,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.v2ray.ang.R
+import com.v2ray.ang.dto.EConfigType
+import com.v2ray.ang.ui.ServerActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,13 +63,14 @@ fun ConfigsPage(navController: NavController) {
 
     val running = viewModel.running.collectAsState()
 
-//    LaunchedEffect(key1 = Unit) {
-//        viewModel.startListenBroadcast()
-//    }
 
     val clipboardManager = LocalClipboardManager.current
 
-//    val launch = rememberLauncherForActivityResult(contract = , onResult = )
+    val context = LocalContext.current
+
+    val launch = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+        if (it.resultCode == AppCompatActivity.RESULT_OK) viewModel.startVpn()
+    }
 
     Scaffold(
         topBar = {
@@ -75,6 +85,15 @@ fun ConfigsPage(navController: NavController) {
                         },
                         onImportFromQr = {
 
+                        },
+                        onManuallyClicked = {
+                            context.startActivity(
+                                Intent()
+                                    .putExtra("createConfigType", EConfigType.VLESS.value)
+//                                        .putExtra("subscriptionId", mainViewModel.subscriptionId)
+                                    .setClass(context, ServerActivity::class.java)
+                            )
+
                         }
                     )
                     MoreDropDown(
@@ -84,14 +103,36 @@ fun ConfigsPage(navController: NavController) {
             )
         },
         floatingActionButton = {
+            val ping = viewModel.currentPing.collectAsState()
             Column {
-                ExtendedFloatingActionButton(onClick = { /*TODO*/ }) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        val intent = VpnService.prepare(context)
+                        if (intent == null) {
+                            viewModel.startVpn()
+                        } else {
+                            launch.launch(intent)
+                        }
+                    },
+                ) {
                     Icon(
                         if (!running.value) Icons.Filled.PlayArrow else Icons.Filled.Clear,
-                        contentDescription = "start"
+                        contentDescription = "start",
                     )
-                    Text("200 ping")
+
                 }
+
+//                if (running.value)
+//                    ExtendedFloatingActionButton(
+//                        onClick = {
+//                            viewModel.testCurrentServerRealPing()
+//                        },
+//                    ) {
+//                        if (ping.value != -1) {
+//                            Text("${ping.value} ping")
+//                        }
+//                    }
+
             }
         }
     ) {
@@ -123,10 +164,14 @@ fun ConfigsPage(navController: NavController) {
 //                    }
 //                }
 //            }
+            val selected = viewModel.selectedConfig.collectAsState()
+            println(configs.value)
             if (configs.value.isNotEmpty())
 
                 ConfigList(
                     configs = configs.value,
+                    selectedConfig = selected.value,
+                    onSelect = viewModel::onSelect,
                     onEditClicked = {
 
                         navController.navigate("configs/edit")
@@ -142,7 +187,7 @@ fun ConfigsPage(navController: NavController) {
 
 @Composable
 fun MoreDropDown(
-    onRestartService: () -> Unit
+    onRestartService: () -> Unit,
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -195,6 +240,7 @@ fun MoreDropDown(
 fun AddDropDown(
     onImportFromClipboard: () -> Unit,
     onImportFromQr: () -> Unit,
+    onManuallyClicked: () -> Unit,
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
@@ -224,7 +270,7 @@ fun AddDropDown(
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_manually_vmess)) },
-                onClick = { Toast.makeText(context, "Save", Toast.LENGTH_SHORT).show() }
+                onClick = { onManuallyClicked() }
             )
             DropdownMenuItem(
                 text = { Text(stringResource(id = R.string.menu_item_import_config_manually_vless)) },

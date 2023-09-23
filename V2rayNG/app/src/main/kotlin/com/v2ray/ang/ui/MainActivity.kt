@@ -59,11 +59,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //    private val adapter by lazy { MainRecyclerAdapter(this) }
 //    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
 //    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
-    private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-//            startV2Ray()
-        }
-    }
+
 //    private var mItemTouchHelper: ItemTouchHelper? = null
     val mainViewModel: MainViewModel by viewModels()
 
@@ -138,7 +134,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //                adapter.notifyDataSetChanged()
 //            }
 //        }
-        mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
+//        mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
 //        mainViewModel.isRunning.observe(this) { isRunning ->
 //            adapter.isRunning = isRunning
 //            if (isRunning) {
@@ -264,10 +260,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //            true
 //        }
 
-        R.id.sub_update -> {
-            importConfigViaSub()
-            true
-        }
+//        R.id.sub_update -> {
+//            importConfigViaSub()
+//            true
+//        }
 
         R.id.export_all -> {
             if (AngConfigManager.shareNonCustomConfigsToClipboard(this, mainViewModel.serverList) == 0) {

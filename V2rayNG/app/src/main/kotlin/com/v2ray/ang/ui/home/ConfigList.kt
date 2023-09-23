@@ -30,6 +30,8 @@ import com.v2ray.ang.util.AngConfigManager
 @Composable
 fun ConfigList(
     configs: List<ServerConfig>,
+    selectedConfig: ServerConfig?,
+    onSelect: (ServerConfig) -> Unit,
     onEditClicked: (ServerConfig) -> Unit,
     onDeleteClicked: (ServerConfig) -> Unit,
 ) {
@@ -44,6 +46,8 @@ fun ConfigList(
         items(configs) {
             ConfigItem(
                 item = it,
+                isSelected = it == selectedConfig,
+                onSelect = { onSelect(it) },
                 onDelete = { onDeleteClicked(it) },
                 onEdit = { onEditClicked(it) },
                 onShare = {

@@ -129,9 +129,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun testCurrentServerRealPing() {
-        MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_MEASURE_DELAY, "")
-    }
+
 
     fun filterConfig(context :Context) {
         val subscriptions = MmkvManager.decodeSubscriptions()

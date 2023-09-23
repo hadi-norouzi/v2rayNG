@@ -36,53 +36,6 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.LinkedHashSet
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LogcatPage() {
-
-    MaterialTheme {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.title_logcat)) },
-                    actions = {
-                        Row {
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_delete_24dp),
-                                    contentDescription = stringResource(
-                                        id = R.string.logcat_clear
-                                    ),
-                                )
-                            }
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_copy),
-                                    contentDescription = stringResource(
-                                        id = R.string.logcat_copy
-                                    ),
-                                )
-                            }
-                        }
-                    },
-                )
-            }
-        ) {
-            Box(modifier = Modifier.padding(it)) {
-
-                Text("hello compose", modifier = Modifier.background(Color.Red))
-            }
-
-        }
-    }
-}
-
-@Preview
-@Composable
-fun LogcatPage_Preview() {
-    LogcatPage()
-}
-
 class LogcatActivity : BaseActivity() {
     private lateinit var binding: ActivityLogcatBinding
 

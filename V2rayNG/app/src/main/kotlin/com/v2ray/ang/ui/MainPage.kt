@@ -19,7 +19,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -35,10 +34,14 @@ import com.v2ray.ang.R
 import com.v2ray.ang.ui.home.ConfigsPage
 import com.v2ray.ang.ui.home.EditConfigPage
 import com.v2ray.ang.ui.logcat.LogcatPage
+import com.v2ray.ang.ui.settings.AboutPage
 import com.v2ray.ang.ui.settings.AdvancedSettings
-import com.v2ray.ang.ui.settings.RoutingSettings
+import com.v2ray.ang.ui.settings.routing.RoutingSettings
 import com.v2ray.ang.ui.settings.SettingsPage
+import com.v2ray.ang.ui.settings.UiSettings
 import com.v2ray.ang.ui.settings.VpnSettings
+import com.v2ray.ang.ui.settings.perappproxy.PerAppProxyPage
+import com.v2ray.ang.ui.settings.routing.RoutingRulesPage
 import com.v2ray.ang.ui.subscription.EditSubPage
 import com.v2ray.ang.ui.subscription.SubscriptionPage
 
@@ -101,14 +104,30 @@ fun MainPage() {
                     composable("logcat") {
                         LogcatPage()
                     }
+                    composable("settings/ui") {
+                        UiSettings()
+                    }
                     composable("settings/vpn") {
-                        VpnSettings()
+                        VpnSettings(
+                            navHostController
+                        )
+                    }
+                    composable("settings/vpn/per_app_proxy") {
+                        PerAppProxyPage()
                     }
                     composable("settings/routing") {
-                        RoutingSettings()
+                        RoutingSettings(
+                            navHostController
+                        )
+                    }
+                    composable("settings/routing/custom") {
+                        RoutingRulesPage()
                     }
                     composable("settings/advanced") {
                         AdvancedSettings()
+                    }
+                    composable("settings/about") {
+                        AboutPage()
                     }
                 }
             }

@@ -39,7 +39,7 @@ val darkColorScheme = darkColorScheme(
 @Composable
 fun V2rayNGTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicTheming: Boolean = false,
+    dynamicTheming: Boolean = true,
     content: @Composable () -> Unit,
 ) {
 

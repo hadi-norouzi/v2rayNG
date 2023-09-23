@@ -7,6 +7,11 @@
     android:paddingEnd="10dp"
     tools:context=".ui.MainActivity">
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/logcat_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <ProgressBar
         android:id="@+id/pb_waiting"
         style="@android:style/Widget.DeviceDefault.ProgressBar"
@@ -26,13 +31,10 @@
         android:fillViewport="false"
         android:foregroundGravity="bottom">
 
-        <TextView
+        <androidx.compose.ui.platform.ComposeView
             android:id="@+id/tv_logcat"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="bottom"
-            android:maxLines="65536"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:layout_height="wrap_content"/>
     </ScrollView>
 </RelativeLayout>
 

@@ -25,6 +25,9 @@ class SubscriptionViewModel : ViewModel() {
 
     val subscriptions = _subscriptions.asStateFlow()
 
+    private val _subscriptionUpdate: MutableStateFlow<String?> = MutableStateFlow(value = null)
+    val subscriptionUpdate = _subscriptionUpdate.asStateFlow()
+
     init {
         getSubs()
     }
@@ -60,6 +63,7 @@ class SubscriptionViewModel : ViewModel() {
                 println(configText)
                 launch(Dispatchers.Main) {
                     importConfigs(configText, sub.first)
+                    _subscriptionUpdate.emit("Subscription ${sub.second.remarks} Updated")
                 }
             }
 

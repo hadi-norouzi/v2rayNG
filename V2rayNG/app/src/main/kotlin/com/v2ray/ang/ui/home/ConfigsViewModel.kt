@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
 import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -41,6 +43,15 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
     private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
 
+//    private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+//        if (it.resultCode == AppCompatActivity.RESULT_OK) {
+////            startV2Ray()
+//        }
+//    }
+
+    private val _currentPing: MutableStateFlow<Int> = MutableStateFlow(value = -1)
+
+    val currentPing = _currentPing.asStateFlow()
 
     private val _subscriptions: MutableStateFlow<List<Pair<String, SubscriptionItem>>> =
         MutableStateFlow(value = listOf())
@@ -48,8 +59,8 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
     val subscriptions = _subscriptions.asStateFlow()
 
 
-    private val _configs: MutableStateFlow<MutableList<ServerConfig>> =
-        MutableStateFlow(value = mutableListOf())
+    private val _configs: MutableStateFlow<List<ServerConfig>> =
+        MutableStateFlow(value = listOf())
 
     val configs = _configs.asStateFlow()
 
@@ -57,10 +68,22 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
     private val _isRunning = MutableStateFlow(value = false)
     val running = _isRunning.asStateFlow()
 
+
+    private val _selectedConfig: MutableStateFlow<ServerConfig?> = MutableStateFlow(value = null)
+
+    val selectedConfig = _selectedConfig.asStateFlow()
+
+
+    fun onSelect(config: ServerConfig) {
+        _selectedConfig.update { config }
+    }
+
     init {
 
 //        getSubs()
         getConfigs()
+
+        startListenBroadcast()
     }
 
     private fun getSubs() {
@@ -82,7 +105,8 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
 
     private fun getConfigs() {
         val serverList = MmkvManager.decodeServerList()
-        val list = mutableListOf<ServerConfig>()
+        var tempList = mutableListOf<ServerConfig>()
+//        val map = mutableMapOf<String, MutableList<ServerConfig>>()
 //        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
 //        for ((index, guid) in serverList.withIndex()) {
 //            val config = MmkvManager.decodeServerConfig(guid) ?: continue
@@ -96,9 +120,18 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
 //        }
         for (guid in serverList) {
             val config = MmkvManager.decodeServerConfig(guid) ?: continue
-            list.add(config)
+//            if (map[guid] == null) {
+//                map[guid] = mutableListOf()
+//            } else {
+//                map[guid]?.add(config)
+//            }
+            tempList.add(config)
         }
-        _configs.update { list }
+        _configs.update { tempList }
+
+//        _selectedConfig.update { map.values.firstOrNull()?.firstOrNull() }
+
+        mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, serverList.firstOrNull())
         print("configs ${_configs.value}")
     }
 
@@ -109,6 +142,10 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
             IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY)
         )
         MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_REGISTER_CLIENT, "")
+    }
+
+    fun testCurrentServerRealPing() {
+        MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_MEASURE_DELAY, "")
     }
 
     fun restartV2Ray() {
@@ -125,25 +162,24 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
     fun startVpn() {
         if (_isRunning.value) {
             Utils.stopVService(getApplication())
+            _isRunning.value = false
         } else if (settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN" == "VPN") {
             val intent = VpnService.prepare(getApplication())
             if (intent == null) {
                 startV2Ray()
-            } else {
-//                requestVpnPermission.launch(intent)
             }
         } else {
             startV2Ray()
         }
     }
 
-    fun startV2Ray() {
+    private fun startV2Ray() {
         if (mainStorage?.decodeString(MmkvManager.KEY_SELECTED_SERVER).isNullOrEmpty()) {
             return
         }
 //        showCircle()
 //        toast(R.string.toast_services_start)
-        V2RayServiceManager.startV2Ray(getApplication())
+        V2RayServiceManager.startV2Ray(getApplication() as AngApplication)
         _isRunning.value = true
 //        hideCircle()
     }
@@ -182,7 +218,7 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
                 }
 
                 AppConfig.MSG_MEASURE_DELAY_SUCCESS -> {
-//                    updateTestResultAction.value = intent.getStringExtra("content")
+                    _currentPing.value = intent.getStringExtra("content")?.toInt() ?: -1
                 }
 
                 AppConfig.MSG_MEASURE_CONFIG_SUCCESS -> {
