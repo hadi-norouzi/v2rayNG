@@ -9,7 +9,11 @@ interface ConfigsDatasource {
 
     suspend fun removeConfig(config: ServerConfig)
 
-    suspend fun updateConfig()
+    suspend fun updateConfig(vararg configs: ServerConfig)
 
-    suspend fun addConfig(config: ServerConfig)
+    suspend fun addConfig(vararg config: ServerConfig)
+
+    suspend fun addConfig(url: String, allowInsecure: Boolean = false): Int
+
+    fun getAllConfigs(): List<ServerConfig>
 }

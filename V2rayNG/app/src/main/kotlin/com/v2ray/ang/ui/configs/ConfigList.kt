@@ -1,4 +1,4 @@
-package com.v2ray.ang.ui.home
+package com.v2ray.ang.ui.configs
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.dto.ServerConfig
+import com.v2ray.ang.dto.shareableString
 import com.v2ray.ang.util.AngConfigManager
 
 @Composable
@@ -51,7 +52,7 @@ fun ConfigList(
                 onDelete = { onDeleteClicked(it) },
                 onEdit = { onEditClicked(it) },
                 onShare = {
-                    val config = AngConfigManager.shareConfig(it)
+                    val config = it.shareableString()
                     clipboardManager.setText(AnnotatedString(config))
                 },
             )

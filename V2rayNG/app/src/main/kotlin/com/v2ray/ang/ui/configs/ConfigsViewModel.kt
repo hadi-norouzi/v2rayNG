@@ -1,4 +1,4 @@
-package com.v2ray.ang.ui.home
+package com.v2ray.ang.ui.configs
 
 import android.app.Application
 import android.content.BroadcastReceiver
@@ -7,17 +7,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.VpnService
 import android.util.Log
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AngApplication
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
+import com.v2ray.ang.domain.ConfigRepository
 import com.v2ray.ang.dto.ServerConfig
-import com.v2ray.ang.dto.ServersCache
 import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.service.V2RayServiceManager
@@ -27,27 +24,26 @@ import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.SpeedtestUtil
 import com.v2ray.ang.util.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
-class ConfigsViewModel @Inject constructor(application: Application) : AndroidViewModel(application) {
+class ConfigsViewModel @Inject constructor(
+    application: Application,
+    private val configRepository: ConfigRepository,
+) :
+    AndroidViewModel(application) {
 
     private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
 
-//    private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-//        if (it.resultCode == AppCompatActivity.RESULT_OK) {
-////            startV2Ray()
-//        }
-//    }
 
     private val _currentPing: MutableStateFlow<Int> = MutableStateFlow(value = -1)
 
@@ -58,11 +54,7 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
 
     val subscriptions = _subscriptions.asStateFlow()
 
-
-    private val _configs: MutableStateFlow<List<ServerConfig>> =
-        MutableStateFlow(value = listOf())
-
-    val configs = _configs.asStateFlow()
+    val configs = configRepository.configs
 
 
     private val _isRunning = MutableStateFlow(value = false)
@@ -81,9 +73,17 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
     init {
 
 //        getSubs()
-        getConfigs()
+//        getConfigs()
 
         startListenBroadcast()
+    }
+
+
+
+    fun testAllConfigs() {
+        viewModelScope.launch(Dispatchers.IO) {
+            configRepository.testPingAll()
+        }
     }
 
     private fun getSubs() {
@@ -93,9 +93,9 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
 
     fun addConfig(text: String) {
         val count = AngConfigManager.importBatchConfig(text, "", true)
-        if (count > 0) {
-            getConfigs()
-        }
+//        if (count > 0) {
+//            getConfigs()
+//        }
     }
 
     fun deleteConfig(config: ServerConfig) {
@@ -103,40 +103,42 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
 //        MmkvManager.removeServer(guid)
     }
 
-    private fun getConfigs() {
-        val serverList = MmkvManager.decodeServerList()
-        var tempList = mutableListOf<ServerConfig>()
-//        val map = mutableMapOf<String, MutableList<ServerConfig>>()
-//        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
-//        for ((index, guid) in serverList.withIndex()) {
+//    private fun getConfigs() {
+//        val serverList = MmkvManager.decodeServerList()
+//        var tempList = mutableListOf<ServerConfig>()
+////        val map = mutableMapOf<String, MutableList<ServerConfig>>()
+////        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
+////        for ((index, guid) in serverList.withIndex()) {
+////            val config = MmkvManager.decodeServerConfig(guid) ?: continue
+////            if (config.subscriptionId.isEmpty()) {
+////                list[0].add(config)
+////            } else {
+////
+////
+////
+////            }
+////        }
+//        for (guid in serverList) {
 //            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-//            if (config.subscriptionId.isEmpty()) {
-//                list[0].add(config)
-//            } else {
-//
-//
-//
-//            }
+////            if (map[guid] == null) {
+////                map[guid] = mutableListOf()
+////            } else {
+////                map[guid]?.add(config)
+////            }
+//            tempList.add(config)
 //        }
-        for (guid in serverList) {
-            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-//            if (map[guid] == null) {
-//                map[guid] = mutableListOf()
-//            } else {
-//                map[guid]?.add(config)
-//            }
-            tempList.add(config)
-        }
-        _configs.update { tempList }
-
-//        _selectedConfig.update { map.values.firstOrNull()?.firstOrNull() }
-
-        mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, serverList.firstOrNull())
-        print("configs ${_configs.value}")
-    }
+//        _configs.update { tempList }
+//
+////        _selectedConfig.update { map.values.firstOrNull()?.firstOrNull() }
+//
+//        mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, serverList.firstOrNull())
+//        print("configs ${_configs.value}")
+//    }
 
     fun startListenBroadcast() {
         _isRunning.value = false
+
+
         getApplication<AngApplication>().registerReceiver(
             mMsgReceiver,
             IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY)
@@ -163,7 +165,7 @@ class ConfigsViewModel @Inject constructor(application: Application) : AndroidVi
         if (_isRunning.value) {
             Utils.stopVService(getApplication())
             _isRunning.value = false
-        } else if (settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN" == "VPN") {
+        } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
             val intent = VpnService.prepare(getApplication())
             if (intent == null) {
                 startV2Ray()

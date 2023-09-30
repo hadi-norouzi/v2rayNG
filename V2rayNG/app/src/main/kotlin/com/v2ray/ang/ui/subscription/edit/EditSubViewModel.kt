@@ -1,23 +1,28 @@
-package com.v2ray.ang.ui.subscription
+package com.v2ray.ang.ui.subscription.edit
 
 import android.text.TextUtils
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.tencent.mmkv.MMKV
-import com.v2ray.ang.R
+import com.v2ray.ang.data.SubscriptionDatasource
+import com.v2ray.ang.domain.SubscriptionRepository
 import com.v2ray.ang.dto.SubscriptionItem
-import com.v2ray.ang.extension.toast
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
 class EditSubViewModel @Inject constructor(
-    state: SavedStateHandle
+    state: SavedStateHandle,
+    private val subscriptionRepository: SubscriptionRepository
 ) : ViewModel() {
 
     private val subStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SUB, MMKV.MULTI_PROCESS_MODE) }
@@ -28,6 +33,10 @@ class EditSubViewModel @Inject constructor(
 
     private val _subItem: MutableStateFlow<SubscriptionItem?> = MutableStateFlow(value = null)
     val subItem = _subItem.asStateFlow()
+
+
+    private val _state: MutableStateFlow<SubscriptionState> = MutableStateFlow(value = SubscriptionState.Initial)
+    val state = _state.asStateFlow()
 
 
     init {
@@ -43,12 +52,14 @@ class EditSubViewModel @Inject constructor(
         }
     }
 
+    fun removeSubscription() {
+
+    }
 
     fun saveServer(
         name: String,
         url: String,
-
-        ): Boolean {
+    ) {
         val subItem: SubscriptionItem
         val json = subStorage?.decodeString(subId)
         var subId = subId
@@ -61,22 +72,25 @@ class EditSubViewModel @Inject constructor(
 
         subItem.remarks = name
         subItem.url = url
-        subItem.enabled = false
-        subItem.autoUpdate = false
+        subItem.enabled = true
+        subItem.autoUpdate = true
 
         if (TextUtils.isEmpty(subItem.remarks)) {
-//            toast(R.string.sub_setting_remarks)
-            return false
+            return
         }
-//        if (TextUtils.isEmpty(subItem.url)) {
-//            toast(R.string.sub_setting_url)
-//            return false
-//        }
-
-        subStorage?.encode(subId, Gson().toJson(subItem))
-//        toast(R.string.toast_success)
-//        finish()
-        return true
+        viewModelScope.launch {
+            try {
+                if (subId == null) {
+                    subscriptionRepository.addSubscription(subItem)
+                    _state.value = SubscriptionState.Added(subItem)
+                } else {
+                    subscriptionRepository.updateSubscription(subItem)
+                    _state.value = SubscriptionState.Updated(subItem)
+                }
+            } catch (e: Exception) {
+                _state.value = SubscriptionState.Failed
+            }
+        }
     }
 
 }

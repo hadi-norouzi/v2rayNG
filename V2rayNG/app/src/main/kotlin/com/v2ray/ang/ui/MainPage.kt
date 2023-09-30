@@ -42,7 +42,7 @@ import com.v2ray.ang.ui.settings.UiSettings
 import com.v2ray.ang.ui.settings.VpnSettings
 import com.v2ray.ang.ui.settings.perappproxy.PerAppProxyPage
 import com.v2ray.ang.ui.settings.routing.RoutingRulesPage
-import com.v2ray.ang.ui.subscription.EditSubPage
+import com.v2ray.ang.ui.subscription.edit.EditSubPage
 import com.v2ray.ang.ui.subscription.SubscriptionPage
 
 data class BottomNavigationItem(
