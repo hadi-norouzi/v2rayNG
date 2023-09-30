@@ -31,8 +31,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.v2ray.ang.R
-import com.v2ray.ang.ui.home.ConfigsPage
-import com.v2ray.ang.ui.home.EditConfigPage
+import com.v2ray.ang.ui.configs.ConfigsPage
+import com.v2ray.ang.ui.configs.edit.EditConfigPage
 import com.v2ray.ang.ui.logcat.LogcatPage
 import com.v2ray.ang.ui.settings.AboutPage
 import com.v2ray.ang.ui.settings.AdvancedSettings
