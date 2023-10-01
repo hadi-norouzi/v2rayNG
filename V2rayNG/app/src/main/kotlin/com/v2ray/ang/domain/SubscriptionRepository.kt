@@ -10,10 +10,10 @@ interface SubscriptionRepository {
     suspend fun getSubscriptionData(subId: String)
     suspend fun getSubscriptionData(subscriptionItem: SubscriptionItem)
 
-    suspend fun addSubscription(item: SubscriptionItem)
-
     suspend fun removeSubscription(item: SubscriptionItem)
 
-    suspend fun updateSubscription(item: SubscriptionItem)
+    suspend fun upsertSubscription(item: SubscriptionItem)
+
+    suspend fun getSubscriptionById(id: String): SubscriptionItem
 
 }

@@ -61,13 +61,11 @@ class ConfigsViewModel @Inject constructor(
     val running = _isRunning.asStateFlow()
 
 
-    private val _selectedConfig: MutableStateFlow<ServerConfig?> = MutableStateFlow(value = null)
-
-    val selectedConfig = _selectedConfig.asStateFlow()
+    val selectedConfig = configRepository.selectedConfig
 
 
-    fun onSelect(config: ServerConfig) {
-        _selectedConfig.update { config }
+    fun onSelect(config: ServerConfig) = viewModelScope.launch {
+        configRepository.selectConfig(config)
     }
 
     init {
@@ -77,7 +75,6 @@ class ConfigsViewModel @Inject constructor(
 
         startListenBroadcast()
     }
-
 
 
     fun testAllConfigs() {

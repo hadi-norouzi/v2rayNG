@@ -36,29 +36,30 @@ class SubscriptionDatasourceImpl @Inject constructor() : SubscriptionDatasource 
         return subs.map { it.second.copy(id = it.first) }
     }
 
-    override suspend fun addSubscription(item: SubscriptionItem) {
-        val allSubs = getAllSubs().toMutableList()
-
-        val newItem = item.copy(id = Utils.getUuid())
-
-        subStorage?.encode(newItem.id, Gson().toJson(item))
-
-        allSubs.add(newItem)
-        _subs.update { allSubs }
-    }
-
     override suspend fun removeSubscription(item: SubscriptionItem) {
         val allSubs = getAllSubs().toMutableList()
         allSubs.removeAll { it.id == item.id }
         _subs.update { allSubs }
-        MmkvManager.removeSubscription(item.id)
+        subStorage.remove(item.id)
     }
 
-    override suspend fun updateSubscription(item: SubscriptionItem) {
+    override suspend fun upsertSubscription(item: SubscriptionItem) {
         val allSubs = getAllSubs().toMutableList()
         val index = allSubs.indexOfFirst { it.id == item.id }
-        if (index == -1) return
-        allSubs[index] = item
+        if (index == -1) {
+            val newId = Utils.getUuid()
+            val newItem = item.copy(id = newId)
+            allSubs.add(newItem)
+            subStorage?.encode(newId, Gson().toJson(item))
+        } else {
+            allSubs[index] = item
+            subStorage?.encode(item.id, Gson().toJson(item))
+        }
         _subs.update { allSubs }
+    }
+
+    override suspend fun getSubscriptionById(id: String): SubscriptionItem {
+        val allSubs = getAllSubs().toMutableList()
+        return allSubs.find { it.id == id } ?: throw Exception("Not found")
     }
 }

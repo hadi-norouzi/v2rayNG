@@ -77,8 +77,13 @@ fun MainPage() {
                     composable("configs") {
                         ConfigsPage(navHostController)
                     }
-                    composable("configs/edit") {
-                        EditConfigPage()
+                    composable("coinfigs/add") {
+                        EditConfigPage(navHostController)
+                    }
+                    composable("configs/edit/{configId}",
+                        arguments = listOf(navArgument("configId") { type = NavType.StringType })
+                    ) {
+                        EditConfigPage(navHostController)
                     }
                 }
 

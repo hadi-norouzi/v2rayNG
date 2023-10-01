@@ -79,7 +79,8 @@ fun ConfigItem(
                             Icon(Icons.Outlined.Delete, contentDescription = "")
                         }
                     }
-                    Text("100ms")
+                    if (item.ping != null)
+                        Text("${item.ping}ms")
                 }
             }
         }

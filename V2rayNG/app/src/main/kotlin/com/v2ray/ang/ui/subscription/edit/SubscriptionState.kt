@@ -9,4 +9,6 @@ sealed class SubscriptionState {
     object Initial: SubscriptionState()
 
     object Failed: SubscriptionState()
+
+    object Deleted: SubscriptionState()
 }

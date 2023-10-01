@@ -184,7 +184,7 @@
     <string name="title_del_invalid_config">Delete invalid config(Test first)</string>
     <string name="title_export_all">Export non-custom configs to clipboard</string>
     <string name="title_sub_setting">Subscription group setting</string>
-    <string name="sub_setting_remarks">remarks</string>
+    <string name="sub_setting_remarks">Name</string>
     <string name="sub_setting_url">URL</string>
     <string name="sub_setting_enable">enable update</string>
     <string name="sub_auto_update">Auto update</string>

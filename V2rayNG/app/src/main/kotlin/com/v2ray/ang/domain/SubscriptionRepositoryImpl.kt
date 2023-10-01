@@ -7,14 +7,9 @@ import com.v2ray.ang.data.ConfigsDatasource
 import com.v2ray.ang.data.SubscriptionDatasource
 import com.v2ray.ang.data.SubscriptionRemoteDatasource
 import com.v2ray.ang.dto.SubscriptionItem
-import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.Utils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SubscriptionRepositoryImpl @Inject constructor(
@@ -39,9 +34,8 @@ class SubscriptionRepositoryImpl @Inject constructor(
                 return
             }
             val url = Utils.idnToASCII(subscriptionItem.url)
-            if (!Utils.isValidUrl(url)) {
-                return
-            }
+            if (!Utils.isValidUrl(url)) return
+
             Log.d(AppConfig.ANG_PACKAGE, url)
 
             val configText = subscriptionRemoteDatasource.getSubscriptionData(subscriptionItem)
@@ -53,7 +47,7 @@ class SubscriptionRepositoryImpl @Inject constructor(
             configs.forEach {
                 configsDatasource.addConfig(it)
             }
-            updateSubscription(
+            upsertSubscription(
                 subscriptionItem.copy(
                     updatedAt = System.currentTimeMillis(),
                 )
@@ -65,12 +59,12 @@ class SubscriptionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun addSubscription(item: SubscriptionItem) =
-        subscriptionDatasource.addSubscription(item)
-
     override suspend fun removeSubscription(item: SubscriptionItem) =
         subscriptionDatasource.removeSubscription(item)
 
-    override suspend fun updateSubscription(item: SubscriptionItem) =
-        subscriptionDatasource.updateSubscription(item)
+    override suspend fun upsertSubscription(item: SubscriptionItem) =
+        subscriptionDatasource.upsertSubscription(item)
+
+    override suspend fun getSubscriptionById(id: String): SubscriptionItem =
+        subscriptionDatasource.getSubscriptionById(id)
 }

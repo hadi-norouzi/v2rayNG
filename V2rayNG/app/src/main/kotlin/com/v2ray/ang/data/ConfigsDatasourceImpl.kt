@@ -14,6 +14,7 @@ import com.v2ray.ang.util.MmkvManager
 import com.v2ray.ang.util.Utils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.net.URI
 import javax.inject.Inject
@@ -23,16 +24,32 @@ class ConfigsDatasourceImpl @Inject constructor() : ConfigsDatasource {
 
     private var storage: MMKV = MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE)
     private var serverStorage: MMKV = MMKV.mmkvWithID(MmkvManager.ID_SERVER_CONFIG, MMKV.MULTI_PROCESS_MODE)
+    private val mainStorage: MMKV = MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE)
 
 
     private val _configs: MutableStateFlow<List<ServerConfig>> = MutableStateFlow(value = getAllConfigs())
     override val configs: Flow<List<ServerConfig>>
         get() = _configs
 
+    private val _selectedConfig: MutableStateFlow<ServerConfig?> = MutableStateFlow(value = null)
+    override val selectedConfig: Flow<ServerConfig?>
+        get() = _selectedConfig
+
+    init {
+        getSelectedConfig()
+    }
+
     override suspend fun removeConfig(config: ServerConfig) {
         val configs = getAllConfigs().toMutableList()
         configs.remove(config)
         _configs.update { configs }
+    }
+
+    private fun getSelectedConfig() {
+        val configs = getAllConfigs()
+        val selectedConfig = mainStorage.decodeString(MmkvManager.KEY_SELECTED_SERVER)
+        val config = configs.find { it.id == selectedConfig }
+        _selectedConfig.value = config
     }
 
     override suspend fun updateConfig(vararg configs: ServerConfig) {
@@ -294,6 +311,15 @@ class ConfigsDatasourceImpl @Inject constructor() : ConfigsDatasource {
         }
 
         return list.mapNotNull { decodeServerConfig(it) }
+    }
+
+    override fun selectConfig(item: ServerConfig) {
+        mainStorage.encode(MmkvManager.KEY_SELECTED_SERVER, item.id)
+        val configs = getAllConfigs()
+        val index = configs.indexOfFirst { it.id == item.id  }
+        if (index == -1) return
+        val selected = configs[index]
+        _selectedConfig.value = selected
     }
 
     fun decodeServerConfig(guid: String): ServerConfig? {

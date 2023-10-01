@@ -35,9 +35,7 @@ class SubscriptionViewModel @Inject constructor(
 
 
     fun updateSubscription(subId: String) {
-
         viewModelScope.launch {
-
             repository.getSubscriptionData(subId)
         }
     }

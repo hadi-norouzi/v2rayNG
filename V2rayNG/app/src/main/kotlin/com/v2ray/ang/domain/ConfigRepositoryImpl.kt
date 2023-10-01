@@ -12,6 +12,9 @@ class ConfigRepositoryImpl @Inject constructor(
     override val configs: Flow<List<ServerConfig>>
         get() = configsDatasource.configs
 
+    override val selectedConfig: Flow<ServerConfig?>
+        get() = configsDatasource.selectedConfig
+
     override suspend fun testPingAll() {
         val configs = configsDatasource.getAllConfigs()
 
@@ -37,4 +40,7 @@ class ConfigRepositoryImpl @Inject constructor(
     override suspend fun getAllConfigs(): List<ServerConfig> {
         return configsDatasource.getAllConfigs()
     }
+
+    override suspend fun selectConfig(item: ServerConfig) =
+        configsDatasource.selectConfig(item)
 }

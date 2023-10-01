@@ -48,14 +48,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateListAction.value = -1
     }
 
-    fun removeServer(guid: String) {
-        serverList.remove(guid)
-        MmkvManager.removeServer(guid)
-        val index = getPosition(guid)
-        if(index >= 0){
-            serversCache.removeAt(index)
-        }
-    }
 
     fun appendCustomConfigServer(server: String) {
         val config = ServerConfig.create(EConfigType.CUSTOM)

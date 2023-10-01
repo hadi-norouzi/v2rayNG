@@ -26,6 +26,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.v2ray.ang.dto.SubState
 import com.v2ray.ang.dto.SubscriptionItem
+import java.text.SimpleDateFormat
+import java.time.Instant
 
 @Composable
 fun SubscriptionItem(
@@ -52,7 +54,12 @@ fun SubscriptionItem(
             ) {
                 Text(item.remarks)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(item.url, maxLines = 1)
+                if (item.updatedAt == -1L) {
+
+                    Text(item.url, maxLines = 1)
+                } else {
+                    Text("Updated: ${SimpleDateFormat("dd/MM/yyyy").format(item.updatedAt)}")
+                }
             }
             Row {
                 IconButton(onClick = { onShareClicked(item) }) {
@@ -76,6 +83,9 @@ fun SubscriptionItem(
 @Composable
 fun SubscriptionItemPreview() {
     SubscriptionItem(
-        item = SubscriptionItem(remarks = "Sub", state = SubState.Loading), onEditTap = {}, onReloadTap = {}, onShareClicked = {},
+        item = SubscriptionItem(remarks = "Sub", state = SubState.Loading),
+        onEditTap = {},
+        onReloadTap = {},
+        onShareClicked = {},
     )
 }

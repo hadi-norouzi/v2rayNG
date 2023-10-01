@@ -139,7 +139,7 @@ fun ConfigsPage(navController: NavController, viewModel: ConfigsViewModel = hilt
 //                    }
 //                }
 //            }
-            val selected = viewModel.selectedConfig.collectAsState()
+            val selected = viewModel.selectedConfig.collectAsState(initial = null)
             println(configs.value)
             if (configs.value.isNotEmpty())
 
@@ -147,9 +147,8 @@ fun ConfigsPage(navController: NavController, viewModel: ConfigsViewModel = hilt
                     configs = configs.value,
                     selectedConfig = selected.value,
                     onSelect = viewModel::onSelect,
-                    onEditClicked = {
-
-                        navController.navigate("configs/edit")
+                    onEditClicked = { config ->
+                        navController.navigate("configs/edit/${config.id}")
                     },
                     onDeleteClicked = { config ->
                         viewModel.deleteConfig(config)
