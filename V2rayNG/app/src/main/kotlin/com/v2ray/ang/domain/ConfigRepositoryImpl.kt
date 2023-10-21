@@ -43,4 +43,13 @@ class ConfigRepositoryImpl @Inject constructor(
 
     override suspend fun selectConfig(item: ServerConfig) =
         configsDatasource.selectConfig(item)
+
+    override suspend fun addConfig(vararg configs: ServerConfig) =
+        configsDatasource.addConfig(*configs)
+
+    override suspend fun addConfig(config: String): Int =
+        configsDatasource.addConfig(config)
+
+    override suspend fun deleteConfig(config: ServerConfig) =
+        configsDatasource.removeConfig(config)
 }

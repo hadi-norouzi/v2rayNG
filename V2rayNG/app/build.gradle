@@ -117,8 +117,8 @@ dependencies {
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
     def tvCompose = '1.0.0-alpha09'
-    implementation "androidx.tv:tv-foundation:$tvCompose"
-    implementation "androidx.tv:tv-material:$tvCompose"
+    implementation libs.tv.foundation
+    implementation libs.tv.material
 
     def nav_version = "2.7.2"
     implementation "androidx.navigation:navigation-compose:$nav_version"

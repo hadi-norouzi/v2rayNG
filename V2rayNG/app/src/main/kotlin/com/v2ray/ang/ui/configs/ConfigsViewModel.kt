@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
+import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -57,7 +58,7 @@ class ConfigsViewModel @Inject constructor(
     val configs = configRepository.configs
 
 
-    private val _isRunning = MutableStateFlow(value = false)
+    private val _isRunning: MutableStateFlow<ConnectionState> = MutableStateFlow(value = ConnectionState.Disconnected)
     val running = _isRunning.asStateFlow()
 
 
@@ -88,58 +89,21 @@ class ConfigsViewModel @Inject constructor(
         _subscriptions.update { subs }
     }
 
-    fun addConfig(text: String) {
-        val count = AngConfigManager.importBatchConfig(text, "", true)
-//        if (count > 0) {
-//            getConfigs()
-//        }
+    fun addConfig(text: String) = viewModelScope.launch {
+        configRepository.addConfig(text)
     }
 
-    fun deleteConfig(config: ServerConfig) {
-
-//        MmkvManager.removeServer(guid)
+    fun deleteConfig(config: ServerConfig) = viewModelScope.launch {
+        configRepository.deleteConfig(config)
     }
 
-//    private fun getConfigs() {
-//        val serverList = MmkvManager.decodeServerList()
-//        var tempList = mutableListOf<ServerConfig>()
-////        val map = mutableMapOf<String, MutableList<ServerConfig>>()
-////        val list: MutableList<MutableList<ServerConfig>> = MutableList(serverList.size) { mutableListOf() }
-////        for ((index, guid) in serverList.withIndex()) {
-////            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-////            if (config.subscriptionId.isEmpty()) {
-////                list[0].add(config)
-////            } else {
-////
-////
-////
-////            }
-////        }
-//        for (guid in serverList) {
-//            val config = MmkvManager.decodeServerConfig(guid) ?: continue
-////            if (map[guid] == null) {
-////                map[guid] = mutableListOf()
-////            } else {
-////                map[guid]?.add(config)
-////            }
-//            tempList.add(config)
-//        }
-//        _configs.update { tempList }
-//
-////        _selectedConfig.update { map.values.firstOrNull()?.firstOrNull() }
-//
-//        mainStorage?.encode(MmkvManager.KEY_SELECTED_SERVER, serverList.firstOrNull())
-//        print("configs ${_configs.value}")
-//    }
-
-    fun startListenBroadcast() {
-        _isRunning.value = false
-
+    private fun startListenBroadcast() {
 
         getApplication<AngApplication>().registerReceiver(
             mMsgReceiver,
             IntentFilter(AppConfig.BROADCAST_ACTION_ACTIVITY)
         )
+        println("broadcast registered ${mMsgReceiver.isOrderedBroadcast}")
         MessageUtil.sendMsg2Service(getApplication(), AppConfig.MSG_REGISTER_CLIENT, "")
     }
 
@@ -148,7 +112,7 @@ class ConfigsViewModel @Inject constructor(
     }
 
     fun restartV2Ray() {
-        if (_isRunning.value) {
+        if (_isRunning.value == ConnectionState.Connected) {
             Utils.stopVService(getApplication())
         }
         Observable.timer(500, TimeUnit.MILLISECONDS)
@@ -159,9 +123,9 @@ class ConfigsViewModel @Inject constructor(
     }
 
     fun startVpn() {
-        if (_isRunning.value) {
+        if (_isRunning.value == ConnectionState.Connected) {
             Utils.stopVService(getApplication())
-            _isRunning.value = false
+            _isRunning.value = ConnectionState.Disconnected
         } else if ((settingsStorage?.decodeString(AppConfig.PREF_MODE) ?: "VPN") == "VPN") {
             val intent = VpnService.prepare(getApplication())
             if (intent == null) {
@@ -179,7 +143,7 @@ class ConfigsViewModel @Inject constructor(
 //        showCircle()
 //        toast(R.string.toast_services_start)
         V2RayServiceManager.startV2Ray(getApplication() as AngApplication)
-        _isRunning.value = true
+        _isRunning.value = ConnectionState.Connecting
 //        hideCircle()
     }
 
@@ -193,27 +157,28 @@ class ConfigsViewModel @Inject constructor(
 
     private val mMsgReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context?, intent: Intent?) {
+            println("receiver onReceive called")
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
-                    _isRunning.value = true
+                    _isRunning.value = ConnectionState.Connected
                 }
 
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
-                    _isRunning.value = false
+                    _isRunning.value = ConnectionState.Disconnected
                 }
 
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     getApplication<AngApplication>().toast(R.string.toast_services_success)
-                    _isRunning.value = true
+                    _isRunning.value = ConnectionState.Connected
                 }
 
                 AppConfig.MSG_STATE_START_FAILURE -> {
                     getApplication<AngApplication>().toast(R.string.toast_services_failure)
-                    _isRunning.value = false
+                    _isRunning.value = ConnectionState.Disconnected
                 }
 
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
-                    _isRunning.value = false
+                    _isRunning.value = ConnectionState.Disconnected
                 }
 
                 AppConfig.MSG_MEASURE_DELAY_SUCCESS -> {
@@ -229,4 +194,12 @@ class ConfigsViewModel @Inject constructor(
         }
     }
 
+}
+
+sealed class ConnectionState {
+    object Disconnected : ConnectionState()
+
+    object Connected : ConnectionState()
+
+    object Connecting : ConnectionState()
 }

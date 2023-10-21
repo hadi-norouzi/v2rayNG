@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.v2ray.ang.R
@@ -90,7 +93,6 @@ fun ConfigsPage(navController: NavController, viewModel: ConfigsViewModel = hilt
             )
         },
         floatingActionButton = {
-            val ping = viewModel.currentPing.collectAsState()
             Column {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -102,10 +104,21 @@ fun ConfigsPage(navController: NavController, viewModel: ConfigsViewModel = hilt
                         }
                     },
                 ) {
-                    Icon(
-                        if (!running.value) Icons.Filled.PlayArrow else Icons.Filled.Clear,
-                        contentDescription = "start",
-                    )
+                    when (running.value) {
+                        ConnectionState.Connected, ConnectionState.Disconnected -> {
+                            Icon(
+                                if (running.value == ConnectionState.Disconnected) Icons.Filled.PlayArrow else Icons.Filled.Clear,
+                                contentDescription = "start",
+                            )
+                        }
+                        ConnectionState.Connecting -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 1.dp
+                            )
+                        }
+                    }
+
 
                 }
             }

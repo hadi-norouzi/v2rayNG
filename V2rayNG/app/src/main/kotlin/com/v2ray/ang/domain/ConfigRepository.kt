@@ -18,4 +18,9 @@ interface ConfigRepository {
     suspend fun selectConfig(item: ServerConfig)
 
 
+    suspend fun addConfig(vararg configs: ServerConfig)
+
+    suspend fun addConfig(config: String): Int
+
+    suspend fun deleteConfig(config: ServerConfig)
 }

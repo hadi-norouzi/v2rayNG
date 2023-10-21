@@ -1,7 +1,10 @@
 [versions]
+tvCompose = "1.0.0-alpha09"
 work-runtime-ktx = "2.8.1"
 
 [libraries]
+tv-foundation = { module = "androidx.tv:tv-foundation", version.ref = "tvCompose" }
+tv-material = { module = "androidx.tv:tv-material", version.ref = "tvCompose" }
 work-multiprocess = { module = "androidx.work:work-multiprocess", version.ref = "work-runtime-ktx" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work-runtime-ktx" }
 
