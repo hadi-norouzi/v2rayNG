@@ -12,6 +12,7 @@ import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,8 +23,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.tabs.TabLayoutMediator
 import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
 import com.v2ray.ang.AppConfig
@@ -32,7 +33,6 @@ import com.v2ray.ang.databinding.ActivityMainBinding
 import com.v2ray.ang.databinding.LayoutProgressBinding
 import com.v2ray.ang.dto.EConfigType
 import com.v2ray.ang.extension.toast
-import com.v2ray.ang.helper.SimpleItemTouchHelperCallback
 import com.v2ray.ang.service.V2RayServiceManager
 import com.v2ray.ang.util.AngConfigManager
 import com.v2ray.ang.util.MmkvManager
@@ -46,19 +46,32 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
+
 class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
 
     private val adapter by lazy { MainRecyclerAdapter(this) }
-    private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
-    private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
-    private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            startV2Ray()
-        }
+    private val mainStorage by lazy {
+        MMKV.mmkvWithID(
+            MmkvManager.ID_MAIN,
+            MMKV.MULTI_PROCESS_MODE
+        )
     }
+    private val settingsStorage by lazy {
+        MMKV.mmkvWithID(
+            MmkvManager.ID_SETTING,
+            MMKV.MULTI_PROCESS_MODE
+        )
+    }
+    private val requestVpnPermission =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                startV2Ray()
+            }
+        }
     private var mItemTouchHelper: ItemTouchHelper? = null
     val mainViewModel: MainViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,6 +80,38 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
+
+        MmkvManager.decodeSubscriptions().let { subs ->
+            if (subs.isEmpty()) {
+                binding.subsTab.visibility = View.GONE
+                return@let
+            }
+            binding.subsTab.addTab(binding.subsTab.newTab().apply {
+                text = "Ungroup"
+            })
+            subs.forEach { sub ->
+                binding.subsTab.addTab(binding.subsTab.newTab().apply {
+                    text = sub.second.remarks
+                })
+            }
+
+            val adapter = ConfigsViewPagerAdapter(
+                supportFragmentManager,
+                this@MainActivity.lifecycle,
+                this@MainActivity
+            )
+            binding.viewPager.adapter = adapter
+
+            TabLayoutMediator(
+                binding.subsTab, binding.viewPager,
+            ) { tab, position ->
+                if (position == 0) {
+                    tab.text = "Ungroup"
+                } else {
+                    tab.text = subs[position].second.remarks
+                }
+            }.attach()
+        }
 
         binding.fab.setOnClickListener {
             if (mainViewModel.isRunning.value == true) {
@@ -91,17 +136,22 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
         }
 
-        binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
-
-        val callback = SimpleItemTouchHelperCallback(adapter)
-        mItemTouchHelper = ItemTouchHelper(callback)
-        mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
+//        binding.recyclerView.setHasFixedSize(true)
+//        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+//        binding.recyclerView.adapter = adapter
+//
+//        val callback = SimpleItemTouchHelperCallback(adapter)
+//        mItemTouchHelper = ItemTouchHelper(callback)
+//        mItemTouchHelper?.attachToRecyclerView(binding.recyclerView)
 
 
         val toggle = ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
         binding.navView.setNavigationItemSelectedListener(this)
@@ -144,12 +194,14 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             adapter.isRunning = isRunning
             if (isRunning) {
                 binding.fab.setImageResource(R.drawable.ic_stop_24dp)
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
+                binding.fab.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
                 setTestState(getString(R.string.connection_connected))
                 binding.layoutTest.isFocusable = true
             } else {
                 binding.fab.setImageResource(R.drawable.ic_play_24dp)
-                binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
+                binding.fab.backgroundTintList =
+                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
                 setTestState(getString(R.string.connection_not_connected))
                 binding.layoutTest.isFocusable = false
             }
@@ -169,10 +221,10 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             Utils.stopVService(this)
         }
         Observable.timer(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    startV2Ray()
-                }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                startV2Ray()
+            }
     }
 
     public override fun onResume() {
@@ -194,46 +246,57 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             importQRcode(true)
             true
         }
+
         R.id.import_clipboard -> {
             importClipboard()
             true
         }
+
         R.id.import_manually_vmess -> {
             importManually(EConfigType.VMESS.value)
             true
         }
+
         R.id.import_manually_vless -> {
             importManually(EConfigType.VLESS.value)
             true
         }
+
         R.id.import_manually_ss -> {
             importManually(EConfigType.SHADOWSOCKS.value)
             true
         }
+
         R.id.import_manually_socks -> {
             importManually(EConfigType.SOCKS.value)
             true
         }
+
         R.id.import_manually_trojan -> {
             importManually(EConfigType.TROJAN.value)
             true
         }
+
         R.id.import_manually_wireguard -> {
             importManually(EConfigType.WIREGUARD.value)
             true
         }
+
         R.id.import_config_custom_clipboard -> {
             importConfigCustomClipboard()
             true
         }
+
         R.id.import_config_custom_local -> {
             importConfigCustomLocal()
             true
         }
+
         R.id.import_config_custom_url -> {
             importConfigCustomUrlClipboard()
             true
         }
+
         R.id.import_config_custom_url_scan -> {
             importQRcode(false)
             true
@@ -245,7 +308,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
 
         R.id.export_all -> {
-            if (AngConfigManager.shareNonCustomConfigsToClipboard(this, mainViewModel.serverList) == 0) {
+            if (AngConfigManager.shareNonCustomConfigsToClipboard(
+                    this,
+                    mainViewModel.serverList
+                ) == 0
+            ) {
                 toast(R.string.toast_success)
             } else {
                 toast(R.string.toast_failure)
@@ -270,45 +337,49 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 
         R.id.del_all_config -> {
             AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        MmkvManager.removeAllServer()
-                        mainViewModel.reloadServerList()
-                    }
-                    .setNegativeButton(android.R.string.no) {_, _ ->
-                        //do noting
-                    }
-                    .show()
-            true
-        }
-        R.id.del_duplicate_config-> {
-            AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
-                    mainViewModel.removeDuplicateServer()
+                    MmkvManager.removeAllServer()
                     mainViewModel.reloadServerList()
                 }
-                .setNegativeButton(android.R.string.no) {_, _ ->
+                .setNegativeButton(android.R.string.no) { _, _ ->
                     //do noting
                 }
                 .show()
             true
         }
+
+        R.id.del_duplicate_config -> {
+            AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    mainViewModel.removeDuplicateServer()
+                    mainViewModel.reloadServerList()
+                }
+                .setNegativeButton(android.R.string.no) { _, _ ->
+                    //do noting
+                }
+                .show()
+            true
+        }
+
         R.id.del_invalid_config -> {
             AlertDialog.Builder(this).setMessage(R.string.del_config_comfirm)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     MmkvManager.removeInvalidServer()
                     mainViewModel.reloadServerList()
                 }
-                .setNegativeButton(android.R.string.no) {_, _ ->
+                .setNegativeButton(android.R.string.no) { _, _ ->
                     //do noting
                 }
                 .show()
             true
         }
+
         R.id.sort_by_test_results -> {
             MmkvManager.sortByTestResults()
             mainViewModel.reloadServerList()
             true
         }
+
         R.id.filter_config -> {
             mainViewModel.filterConfig(this)
             true
@@ -317,7 +388,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         else -> super.onOptionsItemSelected(item)
     }
 
-    private fun importManually(createConfigType : Int) {
+    private fun importManually(createConfigType: Int) {
         startActivity(
             Intent()
                 .putExtra("createConfigType", createConfigType)
@@ -336,31 +407,38 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
 //                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP), requestCode)
 //        } catch (e: Exception) {
         RxPermissions(this)
-                .request(Manifest.permission.CAMERA)
-                .subscribe {
-                    if (it)
-                        if (forConfig)
-                            scanQRCodeForConfig.launch(Intent(this, ScannerActivity::class.java))
-                        else
-                            scanQRCodeForUrlToCustomConfig.launch(Intent(this, ScannerActivity::class.java))
+            .request(Manifest.permission.CAMERA)
+            .subscribe {
+                if (it)
+                    if (forConfig)
+                        scanQRCodeForConfig.launch(Intent(this, ScannerActivity::class.java))
                     else
-                        toast(R.string.toast_permission_denied)
-                }
+                        scanQRCodeForUrlToCustomConfig.launch(
+                            Intent(
+                                this,
+                                ScannerActivity::class.java
+                            )
+                        )
+                else
+                    toast(R.string.toast_permission_denied)
+            }
 //        }
         return true
     }
 
-    private val scanQRCodeForConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            importBatchConfig(it.data?.getStringExtra("SCAN_RESULT"))
+    private val scanQRCodeForConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                importBatchConfig(it.data?.getStringExtra("SCAN_RESULT"))
+            }
         }
-    }
 
-    private val scanQRCodeForUrlToCustomConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK) {
-            importConfigCustomUrl(it.data?.getStringExtra("SCAN_RESULT"))
+    private val scanQRCodeForUrlToCustomConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                importConfigCustomUrl(it.data?.getStringExtra("SCAN_RESULT"))
+            }
         }
-    }
 
     /**
      * import config from clipboard
@@ -384,7 +462,8 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             .show()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val count = AngConfigManager.importBatchConfig(server, mainViewModel.subscriptionId, true)
+            val count =
+                AngConfigManager.importBatchConfig(server, mainViewModel.subscriptionId, true)
             delay(500L)
             launch(Dispatchers.Main) {
                 if (count > 0) {
@@ -472,7 +551,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
     /**
      * import config from sub
      */
-    private fun importConfigViaSub() : Boolean {
+    private fun importConfigViaSub(): Boolean {
         val dialog = AlertDialog.Builder(this)
             .setView(LayoutProgressBinding.inflate(layoutInflater).root)
             .setCancelable(false)
@@ -503,18 +582,24 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         intent.addCategory(Intent.CATEGORY_OPENABLE)
 
         try {
-            chooseFileForCustomConfig.launch(Intent.createChooser(intent, getString(R.string.title_file_chooser)))
+            chooseFileForCustomConfig.launch(
+                Intent.createChooser(
+                    intent,
+                    getString(R.string.title_file_chooser)
+                )
+            )
         } catch (ex: ActivityNotFoundException) {
             toast(R.string.toast_require_file_manager)
         }
     }
 
-    private val chooseFileForCustomConfig = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        val uri = it.data?.data
-        if (it.resultCode == RESULT_OK && uri != null) {
-            readContentFromUri(uri)
+    private val chooseFileForCustomConfig =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            val uri = it.data?.data
+            if (it.resultCode == RESULT_OK && uri != null) {
+                readContentFromUri(uri)
+            }
         }
-    }
 
     /**
      * read content from uri
@@ -526,19 +611,19 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
         RxPermissions(this)
-                .request(permission)
-                .subscribe {
-                    if (it) {
-                        try {
-                            contentResolver.openInputStream(uri).use { input ->
-                                importCustomizeConfig(input?.bufferedReader()?.readText())
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+            .request(permission)
+            .subscribe {
+                if (it) {
+                    try {
+                        contentResolver.openInputStream(uri).use { input ->
+                            importCustomizeConfig(input?.bufferedReader()?.readText())
                         }
-                    } else
-                        toast(R.string.toast_permission_denied)
-                }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else
+                    toast(R.string.toast_permission_denied)
+            }
     }
 
     /**
@@ -558,7 +643,11 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             }
             //adapter.notifyItemInserted(mainViewModel.serverList.lastIndex)
         } catch (e: Exception) {
-            ToastCompat.makeText(this, "${getString(R.string.toast_malformed_josn)} ${e.cause?.message}", Toast.LENGTH_LONG).show()
+            ToastCompat.makeText(
+                this,
+                "${getString(R.string.toast_malformed_josn)} ${e.cause?.message}",
+                Toast.LENGTH_LONG
+            ).show()
             e.printStackTrace()
             return
         }
@@ -592,20 +681,30 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             R.id.sub_setting -> {
                 startActivity(Intent(this, SubSettingActivity::class.java))
             }
+
             R.id.settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java)
-                        .putExtra("isRunning", mainViewModel.isRunning.value == true))
+                startActivity(
+                    Intent(this, SettingsActivity::class.java)
+                        .putExtra("isRunning", mainViewModel.isRunning.value == true)
+                )
             }
+
             R.id.user_asset_setting -> {
                 startActivity(Intent(this, UserAssetActivity::class.java))
             }
+
             R.id.promotion -> {
-                Utils.openUri(this, "${Utils.decode(AppConfig.PromotionUrl)}?t=${System.currentTimeMillis()}")
+                Utils.openUri(
+                    this,
+                    "${Utils.decode(AppConfig.PromotionUrl)}?t=${System.currentTimeMillis()}"
+                )
             }
+
             R.id.logcat -> {
                 startActivity(Intent(this, LogcatActivity::class.java))
             }
-            R.id.about-> {
+
+            R.id.about -> {
                 startActivity(Intent(this, AboutActivity::class.java))
             }
         }

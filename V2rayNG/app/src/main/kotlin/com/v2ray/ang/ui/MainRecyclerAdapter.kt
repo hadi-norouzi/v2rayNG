@@ -39,7 +39,7 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
 
     private var mActivity: MainActivity = activity
     private val mainStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
-    private val subStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SUB, MMKV.MULTI_PROCESS_MODE) }
+//    private val subStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SUB, MMKV.MULTI_PROCESS_MODE) }
     private val settingsStorage by lazy { MMKV.mmkvWithID(MmkvManager.ID_SETTING, MMKV.MULTI_PROCESS_MODE) }
     private val share_method: Array<out String> by lazy {
         mActivity.resources.getStringArray(R.array.share_method)
@@ -78,11 +78,11 @@ class MainRecyclerAdapter(val activity: MainActivity) : RecyclerView.Adapter<Mai
                 holder.itemMainBinding.layoutIndicator.setBackgroundResource(0)
             }
             holder.itemMainBinding.tvSubscription.text = ""
-            val json = subStorage?.decodeString(config.subscriptionId)
-            if (!json.isNullOrBlank()) {
-                val sub = Gson().fromJson(json, SubscriptionItem::class.java)
-                holder.itemMainBinding.tvSubscription.text = sub.remarks
-            }
+//            val json = subStorage?.decodeString(config.subscriptionId)
+//            if (!json.isNullOrBlank()) {
+//                val sub = Gson().fromJson(json, SubscriptionItem::class.java)
+//                holder.itemMainBinding.tvSubscription.text = sub.remarks
+//            }
 
             var shareOptions = share_method.asList()
             when (config.configType) {

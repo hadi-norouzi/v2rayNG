@@ -20,6 +20,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize" />
 
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/subs_tab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                app:tabMode="scrollable"
+                />
+
         </com.google.android.material.appbar.AppBarLayout>
 
         <RelativeLayout
@@ -37,12 +45,19 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recycler_view"
+<!--                    <androidx.recyclerview.widget.RecyclerView-->
+<!--                        android:id="@+id/recycler_view"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="0dp"-->
+<!--                        android:layout_weight="1"-->
+<!--                        android:nextFocusRight="@+id/fab" />-->
+
+                    <androidx.viewpager2.widget.ViewPager2
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
                         android:layout_weight="1"
-                        android:nextFocusRight="@+id/fab" />
+                        android:id="@+id/view_pager"
+                        />
 
                     <LinearLayout
                         android:id="@+id/layout_test"
