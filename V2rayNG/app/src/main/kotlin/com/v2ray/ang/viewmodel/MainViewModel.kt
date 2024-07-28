@@ -146,7 +146,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         serversCache.clear()
         for (guid in serverList) {
             val config = MmkvManager.decodeServerConfig(guid) ?: continue
-            if (subscriptionId.isNotEmpty() && subscriptionId != config.subscriptionId) {
+            if (config.subscriptionId != "") {
                 continue
             }
 

@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -24,6 +25,7 @@ import androidx.core.view.GravityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.tbruyelle.rxpermissions.RxPermissions
 import com.tencent.mmkv.MMKV
@@ -32,6 +34,7 @@ import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityMainBinding
 import com.v2ray.ang.databinding.LayoutProgressBinding
 import com.v2ray.ang.dto.EConfigType
+import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.service.V2RayServiceManager
 import com.v2ray.ang.util.AngConfigManager
@@ -80,38 +83,6 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         setContentView(view)
         title = getString(R.string.title_server)
         setSupportActionBar(binding.toolbar)
-
-        MmkvManager.decodeSubscriptions().let { subs ->
-            if (subs.isEmpty()) {
-                binding.subsTab.visibility = View.GONE
-                return@let
-            }
-            binding.subsTab.addTab(binding.subsTab.newTab().apply {
-                text = "Ungroup"
-            })
-            subs.forEach { sub ->
-                binding.subsTab.addTab(binding.subsTab.newTab().apply {
-                    text = sub.second.remarks
-                })
-            }
-
-            val adapter = ConfigsViewPagerAdapter(
-                supportFragmentManager,
-                this@MainActivity.lifecycle,
-                this@MainActivity
-            )
-            binding.viewPager.adapter = adapter
-
-            TabLayoutMediator(
-                binding.subsTab, binding.viewPager,
-            ) { tab, position ->
-                if (position == 0) {
-                    tab.text = "Ungroup"
-                } else {
-                    tab.text = subs[position].second.remarks
-                }
-            }.attach()
-        }
 
         binding.fab.setOnClickListener {
             if (mainViewModel.isRunning.value == true) {
@@ -179,6 +150,62 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
                 }
             }
         })
+
+        setupSubscriptionGroups()
+
+        binding.subsTab.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                binding.toolbar.menu.findItem(R.id.add_config_icon).isVisible = tab?.position == 0
+                binding.toolbar.menu.findItem(R.id.sub_update).isVisible = tab?.position != 0
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+
+            }
+        })
+    }
+
+    private var subscriptionList = listOf<Pair<String, SubscriptionItem>>()
+
+    private fun setupSubscriptionGroups() {
+        val subs = MmkvManager.decodeSubscriptions().filter { it.second.enabled }
+        subscriptionList = subs
+        if (subs.isEmpty()) {
+            binding.subsTab.visibility = View.GONE
+            return
+        } else {
+            binding.subsTab.visibility = View.VISIBLE
+        }
+        binding.subsTab.addTab(binding.subsTab.newTab().apply {
+            text = "Ungroup"
+        })
+        subs.forEach { sub ->
+            binding.subsTab.addTab(binding.subsTab.newTab().apply {
+                text = sub.second.remarks
+            })
+        }
+
+        val adapter = ConfigsViewPagerAdapter(
+            supportFragmentManager,
+            this@MainActivity.lifecycle,
+            this@MainActivity,
+            subs,
+        )
+        binding.viewPager.adapter = adapter
+
+        TabLayoutMediator(
+            binding.subsTab, binding.viewPager,
+        ) { tab, position ->
+            if (position == 0) {
+                tab.text = "Ungroup"
+            } else {
+                tab.text = subs[position - 1].second.remarks
+            }
+        }.attach()
     }
 
     private fun setupViewModel() {
@@ -558,12 +585,13 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             .show()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val count = AngConfigManager.updateConfigViaSubAll()
+            val sub = subscriptionList[binding.subsTab.selectedTabPosition - 1]
+            val count = AngConfigManager.updateConfigViaSubId(sub.first)
             delay(500L)
             launch(Dispatchers.Main) {
                 if (count > 0) {
                     toast(R.string.toast_success)
-                    mainViewModel.reloadServerList()
+//                    mainViewModel.reloadServerList()
                 } else {
                     toast(R.string.toast_failure)
                 }
@@ -674,12 +702,29 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         return super.onKeyDown(keyCode, event)
     }
 
+    companion object {
+        const val SUB_UPDATE = "SUB-UPDATE"
+    }
+
+    private val subActivityLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.getIntExtra(SUB_UPDATE, -1)?.let {
+                if (it == 1) {
+                    setupSubscriptionGroups()
+                }
+            }
+        }
+
+    }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
             //R.id.server_profile -> activityClass = MainActivity::class.java
             R.id.sub_setting -> {
-                startActivity(Intent(this, SubSettingActivity::class.java))
+                subActivityLauncher.launch(Intent(this, SubSettingActivity::class.java))
             }
 
             R.id.settings -> {
