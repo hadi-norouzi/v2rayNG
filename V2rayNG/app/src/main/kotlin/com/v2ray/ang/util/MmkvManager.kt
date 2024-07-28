@@ -5,6 +5,7 @@ import com.tencent.mmkv.MMKV
 import com.v2ray.ang.dto.AssetUrlItem
 import com.v2ray.ang.dto.ServerAffiliationInfo
 import com.v2ray.ang.dto.ServerConfig
+import com.v2ray.ang.dto.ServersCache
 import com.v2ray.ang.dto.SubscriptionItem
 import java.net.URI
 
@@ -32,6 +33,19 @@ object MmkvManager {
         } else {
             Gson().fromJson(json, Array<String>::class.java).toMutableList()
         }
+    }
+
+    fun getAllConfigs(subId: String): List<ServersCache> {
+        val list = decodeServerList()
+        val configList = mutableListOf<ServersCache>()
+        for (i in list) {
+            decodeServerConfig(i)?.let {
+                 if (it.subscriptionId == subId) {
+                    configList.add(ServersCache(i, it))
+                }
+            }
+        }
+        return configList
     }
 
     fun decodeServerConfig(guid: String): ServerConfig? {
