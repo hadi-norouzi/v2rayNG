@@ -15,7 +15,6 @@ import com.tencent.mmkv.MMKV
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivitySubSettingBinding
 import com.v2ray.ang.databinding.ItemQrcodeBinding
-import com.v2ray.ang.databinding.LayoutProgressBinding
 import com.v2ray.ang.dto.SubscriptionItem
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.util.AngConfigManager
@@ -36,7 +35,7 @@ class SubSettingActivity : BaseActivity(), SubSettingActions {
             oldHashCode = field.hashCode()
             field = value
         }
-    private val adapter by lazy { SubSettingRecyclerAdapter(this, this) }
+    private val adapter by lazy { SubSettingRecyclerAdapter(this, subscriptions.toMutableList()) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +65,7 @@ class SubSettingActivity : BaseActivity(), SubSettingActions {
     override fun onResume() {
         super.onResume()
         subscriptions = MmkvManager.decodeSubscriptions()
-        adapter.notifyDataSetChanged()
+        adapter.updateList(subscriptions)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -83,24 +82,29 @@ class SubSettingActivity : BaseActivity(), SubSettingActions {
 
         R.id.sub_update -> {
             val dialog = AlertDialog.Builder(this)
-                .setView(LayoutProgressBinding.inflate(layoutInflater).root)
+                .setTitle("Update Subscriptions")
                 .setCancelable(false)
+                .setOnCancelListener { }
                 .show()
 
-            lifecycleScope.launch(Dispatchers.IO) {
-                val count = AngConfigManager.updateConfigViaSubAll()
-                delay(500L)
-                launch(Dispatchers.Main) {
-                    if (count > 0) {
-                        toast(R.string.toast_success)
-                    } else {
-                        toast(R.string.toast_failure)
-                    }
-                    dialog.dismiss()
+            var count = 0
+            subscriptions.forEach {
+                dialog.setTitle("Updating ${it.second.remarks}")
+                lifecycleScope.launch(Dispatchers.IO) {
+                    count += AngConfigManager.updateConfigViaSubId(it.second.url)
+                    delay(500L)
                 }
             }
 
-            true
+            if (count > 0) {
+                toast(R.string.toast_success)
+            } else {
+                toast(R.string.toast_failure)
+            }
+            dialog.dismiss()
+
+
+            false
         }
 
         else -> super.onOptionsItemSelected(item)

@@ -19,19 +19,16 @@ interface SubSettingActions {
 }
 
 class SubSettingRecyclerAdapter(
-    val activity: SubSettingActivity,
     private val actions: SubSettingActions?,
+    private val subscriptions: MutableList<Pair<String, SubscriptionItem>>,
 ) :
     RecyclerView.Adapter<SubSettingRecyclerAdapter.SubscriptionViewHolder>() {
 
-    private var mActivity: SubSettingActivity = activity
-
-
-    override fun getItemCount() = mActivity.subscriptions.size
+    override fun getItemCount() = subscriptions.size
 
     override fun onBindViewHolder(holder: SubscriptionViewHolder, position: Int) {
-        val subId = mActivity.subscriptions[position].first
-        val subItem = mActivity.subscriptions[position].second
+        val subId = subscriptions[position].first
+        val subItem = subscriptions[position].second
 
         holder.itemView.setBackgroundColor(Color.TRANSPARENT)
 
@@ -70,6 +67,12 @@ class SubSettingRecyclerAdapter(
                 false
             )
         )
+    }
+
+    fun updateList(list: List<Pair<String, SubscriptionItem>>) {
+        subscriptions.clear()
+        subscriptions.addAll(list)
+        notifyDataSetChanged()
     }
 
     class SubscriptionViewHolder(val binding: ItemRecyclerSubSettingBinding) :
