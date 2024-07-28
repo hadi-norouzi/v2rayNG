@@ -50,7 +50,8 @@ import rx.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 
 
-class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedListener,
+    ConfigItemActions {
     private lateinit var binding: ActivityMainBinding
 
     private val adapter by lazy { MainRecyclerAdapter(this) }
@@ -194,6 +195,7 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
             this@MainActivity.lifecycle,
             this@MainActivity,
             subs,
+            this,
         )
         binding.viewPager.adapter = adapter
 
@@ -755,5 +757,55 @@ class MainActivity : BaseActivity(), NavigationView.OnNavigationItemSelectedList
         }
         binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private val share_method: Array<out String> by lazy {
+        resources.getStringArray(R.array.share_method)
+    }
+
+    override fun onShareClick(url: String) {
+//        AlertDialog.Builder(this).setItems(share_method) { _, i ->
+//            try {
+//                when (i) {
+//                    0 -> {
+//                        if (config.configType == EConfigType.CUSTOM) {
+//                            shareFullContent(guid)
+//                        } else {
+//                            val ivBinding =
+//                                ItemQrcodeBinding.inflate(LayoutInflater.from(this))
+//                            ivBinding.ivQcode.setImageBitmap(
+//                                AngConfigManager.share2QRCode(guid)
+//                            )
+//                            AlertDialog.Builder(this).setView(ivBinding.root).show()
+//                        }
+//                    }
+//
+//                    1 -> {
+//                        if (AngConfigManager.share2Clipboard(this, guid) == 0) {
+//                            toast(R.string.toast_success)
+//                        } else {
+//                            toast(R.string.toast_failure)
+//                        }
+//                    }
+//
+//                    2 -> shareFullContent(guid)
+//                    else -> toast("else")
+//                }
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }.show()
+    }
+
+    override fun onEditClick(guid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onItemClick(guid: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun onDeleteClick(guid: String) {
+        TODO("Not yet implemented")
     }
 }

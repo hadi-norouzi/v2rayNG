@@ -13,6 +13,7 @@ import com.v2ray.ang.util.MmkvManager
 
 class ConfigRecyclerAdapter(
     private val subId: String,
+    private val actions: ConfigItemActions? = null,
 ) : RecyclerView.Adapter<MainRecyclerAdapter.BaseViewHolder>(),
     ItemTouchHelperAdapter {
 
@@ -94,41 +95,19 @@ class ConfigRecyclerAdapter(
 
             holder.itemMainBinding.tvStatistics.text = strState
 
-//            holder.itemMainBinding.layoutShare.setOnClickListener {
-//                AlertDialog.Builder(mActivity).setItems(shareOptions.toTypedArray()) { _, i ->
-//                    try {
-//                        when (i) {
-//                            0 -> {
-//                                if (config.configType == EConfigType.CUSTOM) {
-//                                    shareFullContent(guid)
-//                                } else {
-//                                    val ivBinding =
-//                                        ItemQrcodeBinding.inflate(LayoutInflater.from(mActivity))
-//                                    ivBinding.ivQcode.setImageBitmap(
-//                                        AngConfigManager.share2QRCode(
-//                                            guid
-//                                        )
-//                                    )
-//                                    AlertDialog.Builder(mActivity).setView(ivBinding.root).show()
-//                                }
-//                            }
-//
-//                            1 -> {
-//                                if (AngConfigManager.share2Clipboard(mActivity, guid) == 0) {
-//                                    mActivity.toast(R.string.toast_success)
-//                                } else {
-//                                    mActivity.toast(R.string.toast_failure)
-//                                }
-//                            }
-//
-//                            2 -> shareFullContent(guid)
-//                            else -> mActivity.toast("else")
-//                        }
-//                    } catch (e: Exception) {
-//                        e.printStackTrace()
-//                    }
-//                }.show()
-//            }
+            holder.itemMainBinding.layoutShare.setOnClickListener {
+                actions?.onShareClick(guid)
+            }
+            holder.itemMainBinding.layoutEdit.setOnClickListener {
+                actions?.onEditClick(guid)
+            }
+            holder.itemMainBinding.layoutRemove.setOnClickListener {
+                actions?.onDeleteClick(guid)
+            }
+            holder.itemMainBinding.infoContainer.setOnClickListener {
+                actions?.onItemClick(guid)
+            }
+
 
 //            holder.itemMainBinding.layoutEdit.setOnClickListener {
 //                val intent = Intent().putExtra("guid", guid)

@@ -11,6 +11,7 @@ class ConfigsViewPagerAdapter(
     lifecycle: Lifecycle,
     val activity: MainActivity,
     private val subs:  List<Pair<String, SubscriptionItem>>,
+    private val actions: ConfigItemActions,
 ) : FragmentStateAdapter(fragmentManager, lifecycle) {
 
 
@@ -23,6 +24,7 @@ class ConfigsViewPagerAdapter(
                 MainRecyclerAdapter(activity)
             else ConfigRecyclerAdapter(
                 subs[position - 1].first,
+                actions,
             )
         )
     }
