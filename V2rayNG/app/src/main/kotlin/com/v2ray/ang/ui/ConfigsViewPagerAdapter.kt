@@ -4,23 +4,26 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.v2ray.ang.util.MmkvManager
+import com.v2ray.ang.dto.SubscriptionItem
 
 class ConfigsViewPagerAdapter(
-    val fragmentManager: FragmentManager,
-    val lifecycle: Lifecycle,
+    fragmentManager: FragmentManager,
+    lifecycle: Lifecycle,
     val activity: MainActivity,
+    private val subs:  List<Pair<String, SubscriptionItem>>,
 ) : FragmentStateAdapter(fragmentManager, lifecycle) {
 
 
-    private val subs by lazy { MmkvManager.decodeSubscriptions() }
-
-    override fun getItemCount(): Int = subs.size
+    override fun getItemCount(): Int = subs.size + 1
 
     override fun createFragment(position: Int): Fragment {
 
         return ConfigListFragment(
-            adapter = if (position == 0) MainRecyclerAdapter(activity) else MainRecyclerAdapter(activity)
+            adapter = if (position == 0)
+                MainRecyclerAdapter(activity)
+            else ConfigRecyclerAdapter(
+                subs[position - 1].first,
+            )
         )
     }
 }
