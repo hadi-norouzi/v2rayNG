@@ -535,6 +535,19 @@ object AngConfigManager {
         return count
     }
 
+    fun updateConfigViaSubId(subId: String): Int {
+        var count = 0
+        try {
+            val sub = MmkvManager.decodeSubscriptions().firstOrNull { it.first == subId }
+            if (sub == null) return -1
+            count = updateConfigViaSub(sub)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return 0
+        }
+        return count
+    }
+
     private fun updateConfigViaSub(it: Pair<String, SubscriptionItem>): Int {
         try {
             if (TextUtils.isEmpty(it.first)
