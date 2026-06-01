@@ -8,6 +8,11 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -21,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -165,5 +171,18 @@ class LogcatActivity : BaseActivity(), SwipeRefreshLayout.OnRefreshListener {
     @SuppressLint("NotifyDataSetChanged")
     fun refreshData() {
         adapter.notifyDataSetChanged()
+    }
+}
+
+
+@Composable
+fun LogcatPage(modifier: Modifier = Modifier) {
+
+    val viewModel: LogcatViewModel = viewModel()
+    Scaffold { padding ->
+
+        Box(
+            modifier = Modifier.padding(padding)
+        ) { }
     }
 }
