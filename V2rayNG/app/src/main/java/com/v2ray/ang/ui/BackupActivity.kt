@@ -3,6 +3,34 @@ package com.v2ray.ang.ui
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import com.tencent.mmkv.MMKV
@@ -39,8 +67,10 @@ class BackupActivity : HelperBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //setContentView(binding.root)
-        setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.title_configuration_backup_restore))
 
+        //setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.title_configuration_backup_restore))
+
+        /*
         binding.layoutBackup.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle(R.string.title_configuration_backup)
@@ -87,6 +117,41 @@ class BackupActivity : HelperBaseActivity() {
 
         binding.layoutWebdavConfigSetting.setOnClickListener {
             showWebDavSettingsDialog()
+        }
+        */
+
+        setContent {
+            V2RayNGTheme {
+                BackupPage(
+                    onBack = { finish() },
+                    onBackupLocal = { backupViaLocal() },
+                    onBackupWebDav = { backupViaWebDav() },
+                    onShare = { shareConfiguration() },
+                    onRestoreLocal = { restoreViaLocal() },
+                    onRestoreWebDav = { restoreViaWebDav() },
+                    onWebDavSettings = { showWebDavSettingsDialog() }
+                )
+            }
+        }
+    }
+
+    private fun shareConfiguration() {
+        val ret = backupConfigurationToCache()
+        if (ret.first) {
+            startActivity(
+                Intent.createChooser(
+                    Intent(Intent.ACTION_SEND).setType("application/zip")
+                        .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        .putExtra(
+                            Intent.EXTRA_STREAM,
+                            FileProvider.getUriForFile(
+                                this, BuildConfig.APPLICATION_ID + ".cache", File(ret.second)
+                            )
+                        ), getString(R.string.title_configuration_share)
+                )
+            )
+        } else {
+            toastError(R.string.toast_failure)
         }
     }
 
@@ -311,4 +376,120 @@ class BackupActivity : HelperBaseActivity() {
             .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BackupPage(
+    onBack: () -> Unit,
+    onBackupLocal: () -> Unit,
+    onBackupWebDav: () -> Unit,
+    onShare: () -> Unit,
+    onRestoreLocal: () -> Unit,
+    onRestoreWebDav: () -> Unit,
+    onWebDavSettings: () -> Unit
+) {
+    var showBackupOptions by remember { mutableStateOf(false) }
+    var showRestoreOptions by remember { mutableStateOf(false) }
+    val backupOptions = stringArrayResource(R.array.config_backup_options)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.title_configuration_backup_restore)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            BackupItem(
+                title = stringResource(R.string.title_configuration_backup),
+                onClick = { showBackupOptions = true }
+            )
+            BackupItem(
+                title = stringResource(R.string.title_configuration_share),
+                onClick = onShare
+            )
+            BackupItem(
+                title = stringResource(R.string.title_configuration_restore),
+                onClick = { showRestoreOptions = true }
+            )
+            BackupItem(
+                title = stringResource(R.string.title_webdav_config_setting),
+                onClick = onWebDavSettings
+            )
+        }
+    }
+
+    if (showBackupOptions) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showBackupOptions = false },
+            title = { Text(stringResource(R.string.title_configuration_backup)) },
+            text = {
+                Column {
+                    backupOptions.forEachIndexed { index, option ->
+                        Text(
+                            text = option,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showBackupOptions = false
+                                    if (index == 0) onBackupLocal() else onBackupWebDav()
+                                }
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+
+    if (showRestoreOptions) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showRestoreOptions = false },
+            title = { Text(stringResource(R.string.title_configuration_restore)) },
+            text = {
+                Column {
+                    backupOptions.forEachIndexed { index, option ->
+                        Text(
+                            text = option,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showRestoreOptions = false
+                                    if (index == 0) onRestoreLocal() else onRestoreWebDav()
+                                }
+                                .padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            },
+            confirmButton = {}
+        )
+    }
+}
+
+@Composable
+fun BackupItem(title: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Text(text = title, style = MaterialTheme.typography.bodyLarge)
+    }
+    HorizontalDivider()
 }
