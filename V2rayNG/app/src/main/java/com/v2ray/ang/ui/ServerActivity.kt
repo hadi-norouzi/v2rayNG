@@ -14,7 +14,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.AppConfig.DEFAULT_PORT
-import com.v2ray.ang.AppConfig.PREF_ALLOW_INSECURE
 import com.v2ray.ang.AppConfig.REALITY
 import com.v2ray.ang.AppConfig.TLS
 import com.v2ray.ang.AppConfig.WIREGUARD_LOCAL_ADDRESS_V4
@@ -141,6 +140,8 @@ class ServerActivity : BaseActivity() {
     private val layout_extra: LinearLayout? by lazy { findViewById(R.id.layout_extra) }
     private val et_ech_config_list: EditText? by lazy { findViewById(R.id.et_ech_config_list) }
     private val container_ech_config_list: LinearLayout? by lazy { findViewById(R.id.lay_ech_config_list) }
+    private val et_verify_peer_cert_by_name: EditText? by lazy { findViewById(R.id.et_verify_peer_cert_by_name) }
+    private val container_verify_peer_cert_by_name: LinearLayout? by lazy { findViewById(R.id.lay_verify_peer_cert_by_name) }
     private val et_pinned_ca256: EditText? by lazy { findViewById(R.id.et_pinned_ca256) }
     private val container_pinned_ca256: LinearLayout? by lazy { findViewById(R.id.lay_pinned_ca256) }
     private val layout_browser_dialer: LinearLayout? by lazy { findViewById(R.id.layout_browser_dialer) }
@@ -296,6 +297,7 @@ class ServerActivity : BaseActivity() {
                             container_spider_x,
                             container_mldsa65_verify,
                             container_ech_config_list,
+                            container_verify_peer_cert_by_name,
                             container_pinned_ca256
                         ).forEach { it?.visibility = View.GONE }
                     }
@@ -308,6 +310,7 @@ class ServerActivity : BaseActivity() {
                             container_alpn,
                             container_allow_insecure,
                             container_ech_config_list,
+                            container_verify_peer_cert_by_name,
                             container_pinned_ca256
                         ).forEach { it?.visibility = View.VISIBLE }
                         listOf(
@@ -328,6 +331,7 @@ class ServerActivity : BaseActivity() {
                             container_alpn,
                             container_allow_insecure,
                             container_ech_config_list,
+                            container_verify_peer_cert_by_name,
                             container_pinned_ca256
                         ).forEach { it?.visibility = View.GONE }
                         listOf(
@@ -411,6 +415,7 @@ class ServerActivity : BaseActivity() {
                     sp_allow_insecure?.setSelection(allowinsecure)
                 }
                 et_ech_config_list?.text = Utils.getEditable(config.echConfigList)
+                et_verify_peer_cert_by_name?.text = Utils.getEditable(config.verifyPeerCertByName)
                 et_pinned_ca256?.text = Utils.getEditable(config.pinnedCA256)
             } else if (config.security == REALITY) {
                 et_public_key?.text = Utils.getEditable(config.publicKey.orEmpty())
@@ -614,11 +619,12 @@ class ServerActivity : BaseActivity() {
         val spiderX = et_spider_x?.text?.toString()
         val mldsa65Verify = et_mldsa65_verify?.text?.toString()
         val echConfigList = et_ech_config_list?.text?.toString()
+        val verifyPeerCertByName = et_verify_peer_cert_by_name?.text?.toString()
         val pinnedCA256 = et_pinned_ca256?.text?.toString()
 
         val allowInsecure =
             if (allowInsecureField == null || allowinsecures[allowInsecureField].isBlank()) {
-                MmkvManager.decodeSettingsBool(PREF_ALLOW_INSECURE)
+                false
             } else {
                 allowinsecures[allowInsecureField].toBoolean()
             }
@@ -633,6 +639,7 @@ class ServerActivity : BaseActivity() {
         config.spiderX = spiderX
         config.mldsa65Verify = mldsa65Verify
         config.echConfigList = echConfigList
+        config.verifyPeerCertByName = verifyPeerCertByName
         config.pinnedCA256 = pinnedCA256
     }
 

@@ -118,9 +118,11 @@
     <string name="server_lab_xhttp_extra">XHTTP Extra raw JSON, format: { XHTTPObject }</string>
     <string name="server_lab_final_mask">finalMask raw JSON, format: { FinalMaskObject }</string>
     <string name="server_lab_ech_config_list">EchConfigList</string>
+    <string name="server_lab_verify_peer_cert_by_name">Verify Peer Cert By Name</string>
     <string name="server_lab_pinned_ca256">Certificate fingerprint (SHA-256)</string>
     <string name="server_lab_browser_dialer">Enable Browser Dialer</string>
     <string name="server_lab_browser_dialer_tip">Only supports xhttp (packet-up) and ws outbound; TLS-related settings may be ignored or conflict</string>
+    <string name="toast_allow_insecure_deprecated">WARNING: Skipping certificate verification "allowInsecure" will be disabled in August 2026. Please use certificate fingerprints as soon as possible. This feature will not be available after its expiration.</string>
 
     <!-- UserAssetActivity -->
     <string name="toast_asset_copy_failed">File copy failed, please use File Manager</string>
@@ -225,9 +227,6 @@
     <string name="title_pref_proxy_sharing_enabled">Allow connections from the LAN</string>
     <string name="summary_pref_proxy_sharing_enabled">Other devices can connect to proxy by your IP address through local proxy. Only enable in trusted networks to avoid unauthorized connections</string>
     <string name="toast_warning_pref_proxysharing_short">Allow connections from the LAN. Make sure you are in a trusted network</string>
-
-    <string name="title_pref_allow_insecure">allowInsecure</string>
-    <string name="summary_pref_allow_insecure">When TLS is selected, allow insecure connections by default</string>
 
     <string name="title_pref_socks_port">Local proxy port</string>
     <string name="title_pref_enable_local_proxy">Enable local proxy</string>

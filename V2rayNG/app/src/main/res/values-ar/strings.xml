@@ -118,6 +118,7 @@
     <string name="server_lab_xhttp_extra">XHTTP Extra raw JSON, format: { XHTTPObject }</string>
     <string name="server_lab_final_mask">finalMask raw JSON, format: { FinalMaskObject }</string>
     <string name="server_lab_ech_config_list">EchConfigList</string>
+    <string name="server_lab_verify_peer_cert_by_name">Verify Peer Cert By Name</string>
     <string name="server_lab_pinned_ca256">Certificate fingerprint (SHA-256)</string>
 
     <!-- UserAssetActivity -->
@@ -219,9 +220,6 @@
     <string name="title_pref_proxy_sharing_enabled">السماح بالاتصالات من الشبكة المحلية</string>
     <string name="summary_pref_proxy_sharing_enabled">يمكن للأجهزة الأخرى الاتصال بالبروكسي بواسطة عنوان IP الخاص بك من خلال socks/http، يتم التمكين فقط في الشبكة الموثوقة لتجنب الاتصال غير المصرح به</string>
     <string name="toast_warning_pref_proxysharing_short">السماح بالاتصالات من الشبكة المحلية، تأكد من أنك في شبكة موثوقة</string>
-
-    <string name="title_pref_allow_insecure">السماح غير الآمن</string>
-    <string name="summary_pref_allow_insecure">عند TLS، الافتراضي هو السماح غير الآمن</string>
 
     <string name="title_pref_socks_port">منفذ بروكسي Local</string>
     <string name="title_pref_enable_local_proxy">تفعيل الوكيل المحلي</string>
